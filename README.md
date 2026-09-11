@@ -1,57 +1,47 @@
-# Abstrakte Datentypen und grundlegende Datenstrukturen
+# Python Data Structures Fundamentals
 
-Dieses Repository ist ein persönliches Lern- und Nachschlagewerk zu grundlegenden Datenstrukturen und ihrer algorithmischen Analyse.
+A personal learning and reference repository covering fundamental data structures, algorithmic complexity, and reusable problem-solving patterns in Python.
 
-Dieses Repository dokumentiert meinen Lernprozess zu grundlegenden
-Datenstrukturen und algorithmischer Komplexität. Übungsbeschreibungen wurden
-sinngemäß zusammengefasst; Implementierungen, Erklärungen und zusätzliche
-Beispiele wurden im Rahmen meiner eigenen Bearbeitung erstellt.
+This repository documents my learning process around **stacks, queues, linked lists, Big-O complexity, and common algorithmic techniques**. Exercise descriptions have been paraphrased where appropriate; the implementations, explanations, examples, and additional documentation were created as part of my own learning process.
 
-Im Mittelpunkt stehen aktuell:
+> **Language note:** Code, identifiers, and technical terminology are written in English. Some in-depth learning notes, topic documentation, and exercise explanations are currently written in German and intentionally remain part of the repository as study material.
 
-- **Stacks**
-- **Queues**
-- **Linked Lists**
-- **Big-O-Notation**
-- wiederkehrende **Problemlösungsmuster** wie Slow/Fast Pointer, Hilfs-Sets und monotone Queues
-
-Das Repository soll nicht nur fertigen Code sammeln. Es dokumentiert auch, **warum** eine Lösung funktioniert, welche Laufzeit sie besitzt, welche Randfälle wichtig sind und welche Designentscheidungen hinter der jeweiligen Implementierung stehen.
-
+The goal is not simply to collect working solutions. Each topic is documented with the reasoning behind the implementation, time and space complexity, edge cases, trade-offs, and patterns that can be transferred to new problems.
 
 ---
 
-## Lernkontext
+## Learning Structure
 
-Die Inhalte bauen auf drei Ebenen auf:
+The repository is organized around three complementary layers:
 
-1. **Theorie**  
-   Was ist die Datenstruktur? Welche Eigenschaften und Operationen besitzt sie?
+1. **Concepts**  
+   What is the data structure? Which properties and operations define it?
 
-2. **Übungen**  
-   Konkrete Problemstellungen mit ausführlich dokumentierten Lösungen.
+2. **Exercises**  
+   Concrete problems with documented implementations and step-by-step explanations.
 
-3. **Übergreifende Muster**  
-   Welche Ideen tauchen in verschiedenen Aufgaben immer wieder auf?
+3. **Reusable Patterns**  
+   Which techniques appear repeatedly across different problems?
 
-Ein zentraler Gedanke ist die Trennung von **abstraktem Datentyp und Implementierung**:
+A central idea throughout the repository is the distinction between an **abstract data type** and its **implementation**:
 
 ```text
-Was soll eine Struktur können?
-        ↓
-     ADT / Idee
-        ↓
-Wie wird dieses Verhalten technisch umgesetzt?
-        ↓
-  Implementierung
+What behavior should the structure provide?
+                ↓
+          ADT / concept
+                ↓
+How is that behavior implemented technically?
+                ↓
+          Implementation
 ```
 
-Eine Queue beschreibt beispielsweise das FIFO-Verhalten. Ob sie intern mit einer Python-Liste, einer `deque` oder einer verketteten Liste umgesetzt wird, ist eine davon getrennte Entscheidung.
+A queue, for example, is defined by FIFO behavior. Whether it is implemented internally with a Python `list`, a `deque`, or a linked list is a separate design decision.
 
-Mehr dazu: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
+More: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 
 ---
 
-## Repository-Struktur
+## Repository Structure
 
 ```text
 .
@@ -97,78 +87,78 @@ Mehr dazu: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 
 ---
 
-## Drei Dokumentationsebenen
+## Documentation Layers
 
-### 1. Python-Dateien
+### 1. Python Implementations
 
-Die `.py`-Dateien enthalten die eigentliche Lösung.
+The `.py` files contain the clean reference implementations.
 
-Kommentare werden bewusst sparsam eingesetzt:
+Comments are intentionally kept concise and are mainly used when they explain:
+
+- **why** a line or step is necessary,
+- an important algorithmic decision,
+- a non-obvious edge case,
+- or a relevant complexity consideration.
+
+Example:
 
 ```python
 # Save the next node before reversing the current link.
 next_node = current.next
 ```
 
-Ein Kommentar soll vor allem dann vorhanden sein, wenn er erklärt:
-
-- **warum** eine Zeile notwendig ist,
-- welche algorithmische Entscheidung getroffen wurde,
-- welcher Abschnitt besonders wichtig ist,
-- oder welche Laufzeitentscheidung dahintersteht.
-
-Selbsterklärende Zeilen werden nicht unnötig kommentiert.
+Self-explanatory code is not commented unnecessarily.
 
 ---
 
-### 2. Exercise-Explanation-Dateien
+### 2. Exercise Explanations
 
-Zu jeder Übung gehört eine ausführliche Markdown-Datei:
+Each exercise is accompanied by a detailed Markdown file:
 
 ```text
 exercise.py
 exercise_explanation.md
 ```
 
-Sie enthält unter anderem:
+These files typically include:
 
-- das sinngemäß zusammengefasste Übungsziel,
-- die fertige Lösung,
-- eine schrittweise Herleitung,
-- Visualisierungen in Textform,
-- Laufzeit- und Speicherkomplexität,
-- Rand- und Fehlerfälle,
-- Skalierungs- und Designgedanken,
-- zusätzliche Beispiele.
+- a paraphrased exercise goal,
+- the final implementation,
+- a step-by-step explanation,
+- text-based visualizations,
+- time and space complexity,
+- edge and error cases,
+- design and scaling considerations,
+- additional examples.
 
-Zusätzliche Beispiele werden ausdrücklich als solche gekennzeichnet.
+Additional examples are explicitly separated from the original test scenario.
 
 ---
 
-### 3. Topic-READMEs und `docs/`
+### 3. Topic READMEs and Shared Documentation
 
-Die `README.md` in jedem Themenordner erklärt das **Konzept unabhängig von einer einzelnen Aufgabe**.
+Each data-structure folder contains a `README.md` explaining the topic independently of any single exercise.
 
-Die Dateien unter `docs/` behandeln Wissen, das mehrere Themen verbindet:
+The `docs/` directory contains knowledge that applies across multiple topics:
 
-| Dokument | Zweck |
+| Document | Purpose |
 | --- | --- |
-| [`adt_and_implementation.md`](docs/adt_and_implementation.md) | ADT, Algorithmus und Implementierung voneinander unterscheiden |
-| [`big_o_cheatsheet.md`](docs/big_o_cheatsheet.md) | Big-O verstehen und Code analysieren |
-| [`python_collections_complexity.md`](docs/python_collections_complexity.md) | Laufzeiten wichtiger Python-Operationen |
-| [`data_structure_patterns.md`](docs/data_structure_patterns.md) | Wiederkehrende algorithmische Muster erkennen |
-| [`glossary.md`](docs/glossary.md) | Zentrale Begriffe schnell nachschlagen |
-| [`learning_workflow.md`](docs/learning_workflow.md) | Dokumentations- und Lernstandard dieses Repositories |
+| [`adt_and_implementation.md`](docs/adt_and_implementation.md) | Distinguishes ADTs, algorithms, and implementations |
+| [`big_o_cheatsheet.md`](docs/big_o_cheatsheet.md) | Explains Big-O notation and complexity analysis |
+| [`python_collections_complexity.md`](docs/python_collections_complexity.md) | Reference for common Python operation costs |
+| [`data_structure_patterns.md`](docs/data_structure_patterns.md) | Collects reusable algorithmic patterns |
+| [`glossary.md`](docs/glossary.md) | Quick reference for important terminology |
+| [`learning_workflow.md`](docs/learning_workflow.md) | Documents the learning and documentation workflow |
 
 ---
 
-## Schneller Vergleich
+## Data Structures at a Glance
 
-| Struktur | Grundprinzip | Typische Stärke | Wichtiges Bild |
+| Structure | Core principle | Typical strength | Mental model |
 | --- | --- | --- | --- |
-| Stack | LIFO | letztes Element schnell bearbeiten | Tellerstapel |
-| Queue | FIFO | Elemente in Ankunftsreihenfolge verarbeiten | Warteschlange |
-| Linked List | verkettete Nodes | Links gezielt verändern, ohne Elemente zu verschieben | Kette von Knoten |
+| Stack | LIFO | Work with the most recently added element | Stack of plates |
+| Queue | FIFO | Process elements in arrival order | Waiting line |
+| Linked List | Linked nodes | Change links without shifting contiguous elements | Chain of nodes |
 
 ### Stack
 
@@ -180,9 +170,9 @@ Top
 [A]
 ```
 
-Das zuletzt eingefügte `C` wird zuerst entfernt.
+The most recently added element, `C`, is removed first.
 
-Mehr: [`Stack/README.md`](Stack/README.md)
+More: [`Stack/README.md`](Stack/README.md)
 
 ### Queue
 
@@ -192,9 +182,9 @@ Front                   Rear
 [A] -> [B] -> [C]
 ```
 
-`A` wurde zuerst eingefügt und wird zuerst entfernt.
+`A` entered first and is therefore removed first.
 
-Mehr: [`queue/README.md`](queue/README.md)
+More: [`queue/README.md`](queue/README.md)
 
 ### Linked List
 
@@ -204,143 +194,143 @@ head
 [5 | •] -> [6 | •] -> [7 | None]
 ```
 
-Jeder Node speichert Daten und eine Referenz auf den nächsten Node.
+Each node stores data and a reference to the next node.
 
-Mehr: [`LinkedLists/README.md`](LinkedLists/README.md)
+More: [`LinkedLists/README.md`](LinkedLists/README.md)
 
 ---
 
-## Übungen
+## Exercises
 
 ### Stack
 
-| Übung | Lernidee |
+| Exercise | Main idea |
 | --- | --- |
-| [`rev_string.py`](Stack/rev_string.py) | LIFO zum Umkehren einer Reihenfolge |
-| [`par_checker.py`](Stack/par_checker.py) | offene Klammern auf einem Stack verwalten |
-| [`balanced_symbols.py`](Stack/balanced_symbols.py) | verschachtelte Symboltypen korrekt zuordnen |
+| [`rev_string.py`](Stack/rev_string.py) | Use LIFO behavior to reverse a sequence |
+| [`par_checker.py`](Stack/par_checker.py) | Track unmatched opening parentheses |
+| [`balanced_symbols.py`](Stack/balanced_symbols.py) | Validate correctly nested symbol types |
 
 ### Queue
 
-| Übung | Lernidee |
+| Exercise | Main idea |
 | --- | --- |
-| [`priority_queue.py`](queue/priority_queue.py) | Priorität und stabile Einfügereihenfolge kombinieren |
-| [`max_queue.py`](queue/max_queue.py) | Maximum über eine monotone Hilfsqueue in O(1) lesen |
-| [`reversable_queue.py`](queue/reversable_queue.py) | Queue und Stack kombinieren |
+| [`priority_queue.py`](queue/priority_queue.py) | Combine priority with stable insertion order |
+| [`max_queue.py`](queue/max_queue.py) | Retrieve the maximum in `O(1)` using a monotonic helper queue |
+| [`reversable_queue.py`](queue/reversable_queue.py) | Combine queue and stack behavior |
 
 ### Linked Lists
 
-| Übung | Lernidee |
+| Exercise | Main idea |
 | --- | --- |
-| [`linked_list_append_o1.py`](LinkedLists/linked_list_append_o1.py) | Tail-Referenz für O(1)-Append |
-| [`linked_list_reverse.py`](LinkedLists/linked_list_reverse.py) | Previous/Current/Next und In-place-Änderung |
-| [`linked_list_remove_duplicates.py`](LinkedLists/linked_list_remove_duplicates.py) | Hilfs-Set zum Erkennen bereits gesehener Werte |
-| [`linked_list_find_middle.py`](LinkedLists/linked_list_find_middle.py) | Slow/Fast Pointer |
+| [`linked_list_append_o1.py`](LinkedLists/linked_list_append_o1.py) | Use a tail reference for `O(1)` append |
+| [`linked_list_reverse.py`](LinkedLists/linked_list_reverse.py) | Reverse links in-place with Previous / Current / Next |
+| [`linked_list_remove_duplicates.py`](LinkedLists/linked_list_remove_duplicates.py) | Track seen values with a helper set |
+| [`linked_list_find_middle.py`](LinkedLists/linked_list_find_middle.py) | Find the middle with Slow / Fast Pointers |
 
 ---
 
-## Big O als gemeinsame Sprache
+## Big O as a Shared Language
 
-Viele Entscheidungen in diesem Repository ergeben erst Sinn, wenn die Laufzeit einzelner Operationen berücksichtigt wird.
+Many design decisions in this repository only make sense when the cost of individual operations is taken into account.
 
-Einige Beispiele:
-
-```text
-Listenindex                     -> O(1)
-list.pop() am Ende              -> O(1)
-list.pop(0)                     -> O(n)
-Linked-List-Suche               -> O(n)
-Set-Mitgliedschaft              -> durchschnittlich O(1)
-list.sort()                     -> O(n log n)
-```
-
-Daraus entstehen konkrete Designentscheidungen:
+Examples:
 
 ```text
-Warum liegt das nächste PriorityQueue-Element am Listenende?
-→ Weil pop() dort O(1) ist.
-
-Warum speichert die Linked List einen tail?
-→ Damit das Ende nicht jedes Mal in O(n) gesucht werden muss.
-
-Warum verwenden wir beim Entfernen von Duplikaten ein Set?
-→ Damit die Prüfung eines bereits gesehenen Wertes durchschnittlich O(1) ist.
+List index access                -> O(1)
+list.pop() at the end            -> O(1)
+list.pop(0)                      -> O(n)
+Linked-list search               -> O(n)
+Set membership                   -> average O(1)
+list.sort()                      -> O(n log n)
 ```
 
-Mehr: [`docs/big_o_cheatsheet.md`](docs/big_o_cheatsheet.md)
+These costs directly influence implementation choices:
+
+```text
+Why is the next PriorityQueue element stored at the end of the list?
+→ Because pop() at the end is O(1).
+
+Why does the Linked List keep a tail reference?
+→ So the end does not need to be searched in O(n) on every append.
+
+Why use a set when removing duplicates?
+→ So checking whether a value has already been seen is average O(1).
+```
+
+More: [`docs/big_o_cheatsheet.md`](docs/big_o_cheatsheet.md)
 
 ---
 
-## Wiederkehrende Problemlösungsmuster
+## Reusable Problem-Solving Patterns
 
-Die Übungen sind nicht nur einzelne Lösungen. Sie zeigen Muster, die sich auf andere Probleme übertragen lassen:
+The exercises are not intended to remain isolated solutions. They expose patterns that can be recognized in new problems:
 
 ```text
 Stack / LIFO
-    → Reihenfolgen umkehren
-    → verschachtelte Strukturen prüfen
+    → reverse sequences
+    → validate nested structures
 
 Previous + Current + Next
-    → Links einer Linked List sicher verändern
+    → safely modify linked-list references
 
 Slow + Fast Pointer
-    → Mitte einer Linked List
-    → Zyklenerkennung
+    → find the middle of a linked list
+    → detect cycles
 
 Seen Set
-    → Duplikate erkennen
-    → bereits verarbeitete Werte merken
+    → detect duplicates
+    → track already processed values
 
-Monotone Helper Queue
-    → Maximum ohne erneute vollständige Suche
+Monotonic Helper Queue
+    → retrieve a maximum without rescanning the full queue
 
 Tail Pointer
-    → direkten Zugriff auf das Listenende erhalten
+    → access the end of a linked list directly
 ```
 
-Mehr: [`docs/data_structure_patterns.md`](docs/data_structure_patterns.md)
+More: [`docs/data_structure_patterns.md`](docs/data_structure_patterns.md)
 
 ---
 
-## Qualitätsfragen
+## Quality Considerations
 
-Neben der reinen Funktionalität werden bei den Übungen bewusst weitere Fragen betrachtet:
+The exercises are reviewed not only for functional correctness but also through a broader engineering lens:
 
 ```text
-Korrektheit
-    Funktioniert die Lösung für die normale Eingabe?
+Correctness
+    Does the implementation solve the intended problem?
 
-Randfälle
-    Was passiert bei einer leeren Struktur oder nur einem Element?
+Edge cases
+    What happens with an empty structure or a single element?
 
-Datenintegrität / Invarianten
-    Bleiben head, tail und next-Referenzen konsistent?
+Data integrity / invariants
+    Do head, tail, and next references remain consistent?
 
-Komplexität
-    Welche Operationen werden mit wachsender Eingabe teuer?
+Complexity
+    Which operations become expensive as the input grows?
 
-Skalierung
-    Funktioniert die Idee auch noch bei sehr vielen Elementen?
+Scalability
+    Does the approach still make sense with much larger inputs?
 
-Schnittstelle
-    Soll ein leerer dequeue-Aufruf None liefern oder eine Exception auslösen?
+Interface design
+    Should an empty dequeue return None or raise an exception?
 ```
 
-Bei größeren Softwareprojekten kommen zusätzlich Themen wie Persistenz, Fehlerbehandlung, Datenbank-Constraints und Betriebsreife hinzu.
+For larger software projects, this same mindset extends naturally to topics such as robust error handling, persistence, database constraints, testing, configuration, and operational readiness.
 
 ---
 
-## Python-Umgebung
+## Setup
 
-Einige Stack-Aufgaben verwenden die Bibliothek `pythonds3`. Die verwendete Version ist in [`requirements.txt`](requirements.txt) festgehalten.
+Some stack exercises use the `pythonds3` package. The version used by this repository is recorded in [`requirements.txt`](requirements.txt).
 
-Installation der Projektabhängigkeiten:
+Install the dependencies with:
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-Typischer Import:
+Typical import:
 
 ```python
 from pythonds3.basic import Stack
@@ -348,37 +338,36 @@ from pythonds3.basic import Stack
 
 ---
 
-## Eigenständige Aufbereitung
+## Independent Learning Reference
 
-Die Dokumentation verbindet persönliche Mitschriften, praktische Implementierungen und ergänzende technische Einordnungen zu einer eigenständigen Lernreferenz.
+The documentation combines personal study notes, practical implementations, and additional technical context into a structured learning reference.
 
-Die Übungsziele werden bewusst sinngemäß beschrieben. Im Mittelpunkt stehen die eigene Implementierung, die Herleitung der Lösung sowie Komplexität, Randfälle und übertragbare Problemlösungsmuster.
-
----
-
-## Lizenz
-
-Die eigenen Implementierungen und Dokumentationen dieses Repositories stehen unter der [MIT License](LICENSE). Sie dürfen unter den Bedingungen dieser Lizenz verwendet, verändert und weitergegeben werden.
+Exercise goals are intentionally paraphrased where appropriate. The focus is on the implementation itself, the reasoning behind it, complexity analysis, edge cases, and transferable problem-solving patterns.
 
 ---
 
-## Lernziel
+## License
 
-Am Ende soll nicht nur bekannt sein, **wie** eine bestimmte Übung gelöst wurde.
+The original implementations and documentation in this repository are available under the [MIT License](LICENSE).
 
-Wichtiger ist, bei neuen Problemen Fragen wie diese stellen zu können:
+---
+
+## Learning Goal
+
+The long-term goal is not simply to remember **how** a particular exercise was solved.
+
+More importantly, new problems should trigger questions such as:
 
 ```text
-Welche Datenstruktur passt zu meinem Zugriffsmuster?
+Which data structure fits the required access pattern?
 
-Welche Operation ist hier teuer?
+Which operation is expensive here?
 
-Kann ich zusätzliche Informationen speichern,
-um spätere Operationen schneller zu machen?
+Can I store additional information to make a later operation cheaper?
 
-Welche Invariante muss nach jeder Änderung noch stimmen?
+Which invariant must remain true after every modification?
 
-Erkenne ich hier ein bekanntes Muster?
+Do I recognize a reusable pattern?
 ```
 
-Genau diese Denkweise macht aus einzelnen Übungen übertragbares Wissen.
+That shift—from recalling individual solutions to recognizing structures, costs, and patterns—is the main purpose of this repository.
