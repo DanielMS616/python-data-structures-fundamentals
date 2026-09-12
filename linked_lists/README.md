@@ -432,6 +432,28 @@ Slow/Fast Pointer können auch zur Zyklenerkennung verwendet werden, obwohl das 
 
 ---
 
+## Bewusst eigenständige Übungsdateien
+
+Die Implementierungen in diesem Ordner sind bewusst in sich geschlossen. Gemeinsame Bestandteile wie `Node`, `append()` oder `__str__()` wiederholen sich daher teilweise zwischen den einzelnen Dateien.
+
+Dadurch kann jede Übung unabhängig gelesen, ausgeführt und nachvollzogen werden, ohne zuerst gemeinsame Hilfsmodule oder eine übergeordnete Klassenstruktur verstehen zu müssen.
+
+In produktivem Code würde gemeinsam verwendete Logik normalerweise extrahiert werden, um Duplikation zu reduzieren und Änderungen zentral pflegen zu können. In diesem Lern-Repository ist die Wiederholung jedoch eine bewusste didaktische Entscheidung:
+
+```text
+Unabhängigkeit der Beispiele
++
+direkte Nachvollziehbarkeit
++
+vollständiger Übungskontext
+```
+
+Diese Aspekte haben hier Vorrang vor einer strikt angewendeten DRY-Struktur.
+
+Die Duplikation entsteht damit nicht aus fehlender Wiederverwendung, sondern aus dem Ziel, jede Übung als eigenständiges Lern- und Referenzbeispiel erhalten zu können.
+
+---
+
 ## Übungen in diesem Ordner
 
 ### Append in O(1)

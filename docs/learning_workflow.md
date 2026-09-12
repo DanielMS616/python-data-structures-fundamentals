@@ -120,9 +120,9 @@ Diese Datei erklärt das Thema **unabhängig von einer konkreten Aufgabenstellun
 Beispiele:
 
 ```text
-Stack/README.md
-queue/README.md
-LinkedLists/README.md
+stacks/README.md
+queues/README.md
+linked_lists/README.md
 ```
 
 Sie enthält:

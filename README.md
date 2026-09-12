@@ -10,6 +10,17 @@ The goal is not simply to collect working solutions. Each topic is documented wi
 
 ---
 
+## What This Repository Demonstrates
+
+- Reasoning about time and space complexity instead of treating data structures as black boxes
+- Choosing implementations based on required operation costs and explicit trade-offs
+- Recognizing reusable patterns such as slow/fast pointers, monotonic queues, and auxiliary sets
+- Reasoning about invariants, edge cases, and scalability alongside functional correctness
+- Turning individual exercises into a structured and reusable technical learning reference
+- Documenting technical decisions in a way that makes both the implementation and the underlying reasoning reproducible
+
+---
+
 ## Learning Structure
 
 The repository is organized around three complementary layers:
@@ -172,7 +183,7 @@ Top
 
 The most recently added element, `C`, is removed first.
 
-More: [`Stack/README.md`](Stack/README.md)
+More: [`stacks/README.md`](stacks/README.md)
 
 ### Queue
 
@@ -184,7 +195,7 @@ Front                   Rear
 
 `A` entered first and is therefore removed first.
 
-More: [`queue/README.md`](queue/README.md)
+More: [`queues/README.md`](queues/README.md)
 
 ### Linked List
 
@@ -196,7 +207,7 @@ head
 
 Each node stores data and a reference to the next node.
 
-More: [`LinkedLists/README.md`](LinkedLists/README.md)
+More: [`linked_lists/README.md`](linked_lists/README.md)
 
 ---
 
@@ -206,26 +217,26 @@ More: [`LinkedLists/README.md`](LinkedLists/README.md)
 
 | Exercise | Main idea |
 | --- | --- |
-| [`rev_string.py`](Stack/rev_string.py) | Use LIFO behavior to reverse a sequence |
-| [`par_checker.py`](Stack/par_checker.py) | Track unmatched opening parentheses |
-| [`balanced_symbols.py`](Stack/balanced_symbols.py) | Validate correctly nested symbol types |
+| [`rev_string.py`](stacks/rev_string.py) | Use LIFO behavior to reverse a sequence |
+| [`par_checker.py`](stacks/par_checker.py) | Track unmatched opening parentheses |
+| [`balanced_symbols.py`](stacks/balanced_symbols.py) | Validate correctly nested symbol types |
 
 ### Queue
 
 | Exercise | Main idea |
 | --- | --- |
-| [`priority_queue.py`](queue/priority_queue.py) | Combine priority with stable insertion order |
-| [`max_queue.py`](queue/max_queue.py) | Retrieve the maximum in `O(1)` using a monotonic helper queue |
-| [`reversable_queue.py`](queue/reversable_queue.py) | Combine queue and stack behavior |
+| [`priority_queue.py`](queues/priority_queue.py) | Combine priority with stable insertion order |
+| [`max_queue.py`](queues/max_queue.py) | Retrieve the maximum in `O(1)` using a monotonic helper queue |
+| [`reversable_queue.py`](queues/reversable_queue.py) | Combine queue and stack behavior |
 
 ### Linked Lists
 
 | Exercise | Main idea |
 | --- | --- |
-| [`linked_list_append_o1.py`](LinkedLists/linked_list_append_o1.py) | Use a tail reference for `O(1)` append |
-| [`linked_list_reverse.py`](LinkedLists/linked_list_reverse.py) | Reverse links in-place with Previous / Current / Next |
-| [`linked_list_remove_duplicates.py`](LinkedLists/linked_list_remove_duplicates.py) | Track seen values with a helper set |
-| [`linked_list_find_middle.py`](LinkedLists/linked_list_find_middle.py) | Find the middle with Slow / Fast Pointers |
+| [`linked_list_append_o1.py`](linked_lists/linked_list_append_o1.py) | Use a tail reference for `O(1)` append |
+| [`linked_list_reverse.py`](linked_lists/linked_list_reverse.py) | Reverse links in-place with Previous / Current / Next |
+| [`linked_list_remove_duplicates.py`](linked_lists/linked_list_remove_duplicates.py) | Track seen values with a helper set |
+| [`linked_list_find_middle.py`](linked_lists/linked_list_find_middle.py) | Find the middle with Slow / Fast Pointers |
 
 ---
 

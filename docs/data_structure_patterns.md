@@ -43,8 +43,8 @@ while not stack.is_empty():
 
 ### Im Repository
 
-- `Stack/rev_string.py`
-- `queue/reversable_queue.py`
+- `stacks/rev_string.py`
+- `queues/reversable_queue.py`
 
 ---
 
@@ -82,8 +82,8 @@ elif closing_symbol:
 
 ### Im Repository
 
-- `Stack/par_checker.py`
-- `Stack/balanced_symbols.py`
+- `stacks/par_checker.py`
+- `stacks/balanced_symbols.py`
 
 ---
 
@@ -123,7 +123,7 @@ Darum muss dieser vorher gesichert werden.
 
 ### Im Repository
 
-- `LinkedLists/linked_list_reverse.py`
+- `linked_lists/linked_list_reverse.py`
 
 ---
 
@@ -158,7 +158,7 @@ Wenn `fast` das Ende erreicht, befindet sich `slow` ungefähr in der Mitte.
 
 ### Im Repository
 
-- `LinkedLists/linked_list_find_middle.py`
+- `linked_lists/linked_list_find_middle.py`
 
 ---
 
@@ -192,7 +192,7 @@ Membership-Test -> O(1)
 
 ### Im Repository
 
-- `LinkedLists/linked_list_remove_duplicates.py`
+- `linked_lists/linked_list_remove_duplicates.py`
 
 ---
 
@@ -242,7 +242,7 @@ tail muss nach jeder strukturellen Änderung korrekt sein.
 
 ### Im Repository
 
-- `LinkedLists/linked_list_append_o1.py`
+- `linked_lists/linked_list_append_o1.py`
 
 ---
 
@@ -275,7 +275,7 @@ max_queue[0]
 
 ### Im Repository
 
-- `queue/max_queue.py`
+- `queues/max_queue.py`
 
 ---
 
@@ -309,7 +309,7 @@ Beide Priorität `2`, aber `C` kam früher.
 
 ### Im Repository
 
-- `queue/priority_queue.py`
+- `queues/priority_queue.py`
 
 ---
 
