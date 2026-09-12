@@ -1,7 +1,7 @@
 from pythonds3.basic import Stack
 
 
-def par_checker(symbol_string):
+def par_checker(symbol_string: str) -> bool:
     stack = Stack()
 
     # Opening parentheses wait for a matching closing parenthesis.

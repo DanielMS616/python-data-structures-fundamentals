@@ -1,14 +1,14 @@
 class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
+    def __init__(self, data: object) -> None:
+        self.data: object = data
+        self.next: Node | None = None
 
 
 class LinkedList:
-    def __init__(self):
-        self.head = None
+    def __init__(self) -> None:
+        self.head: Node | None = None
 
-    def find_middle(self):
+    def find_middle(self) -> object | None:
         slow = self.head
         fast = self.head
 
@@ -20,10 +20,10 @@ class LinkedList:
         # When fast reaches the end, slow is at the middle.
         return slow.data if slow else None
 
-    def append(self, data):
+    def append(self, data: object) -> None:
         new_node = Node(data)
 
-        if not self.head:
+        if self.head is None:
             self.head = new_node
             return
 
@@ -34,7 +34,7 @@ class LinkedList:
 
         last_node.next = new_node
 
-    def __str__(self):
+    def __str__(self) -> str:
         elements = []
         current = self.head
 

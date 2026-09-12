@@ -1,9 +1,9 @@
 class PriorityQueue:
-    def __init__(self):
-        self.queue = []
-        self.counter = 0
+    def __init__(self) -> None:
+        self.queue: list[tuple[int, int, object]] = []
+        self.counter: int = 0
 
-    def enqueue(self, item, priority):
+    def enqueue(self, item: object, priority: int) -> None:
         # The counter preserves FIFO order for equal priorities.
         self.queue.append((priority, self.counter, item))
         self.counter += 1
@@ -14,7 +14,7 @@ class PriorityQueue:
             reverse=True,
         )
 
-    def dequeue(self):
+    def dequeue(self) -> object | None:
         if not self.queue:
             return None
 

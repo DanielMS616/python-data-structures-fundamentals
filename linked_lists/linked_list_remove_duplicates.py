@@ -1,21 +1,25 @@
+from collections.abc import Hashable
+
+
 class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
+    def __init__(self, data: Hashable) -> None:
+        self.data: Hashable = data
+        self.next: Node | None = None
 
 
 class LinkedList:
-    def __init__(self):
-        self.head = None
+    def __init__(self) -> None:
+        self.head: Node | None = None
 
-    def remove_duplicates(self):
-        seen = set()
+    def remove_duplicates(self) -> None:
+        seen: set[Hashable] = set()
         current = self.head
-        previous = None
+        previous: Node | None = None
 
         while current:
             # Skip nodes whose value has already appeared.
             if current.data in seen:
+                assert previous is not None
                 previous.next = current.next
 
             else:
@@ -24,10 +28,10 @@ class LinkedList:
 
             current = current.next
 
-    def append(self, data):
+    def append(self, data: Hashable) -> None:
         new_node = Node(data)
 
-        if not self.head:
+        if self.head is None:
             self.head = new_node
             return
 
@@ -38,7 +42,7 @@ class LinkedList:
 
         last_node.next = new_node
 
-    def __str__(self):
+    def __str__(self) -> str:
         elements = []
         current = self.head
 

@@ -1,7 +1,7 @@
 from pythonds3.basic import Stack
 
 
-def rev_string(my_str):
+def rev_string(my_str: str) -> str:
     stack = Stack()
 
     # Store all characters on the stack.

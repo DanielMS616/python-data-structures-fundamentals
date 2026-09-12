@@ -1,7 +1,7 @@
 from pythonds3.basic import Stack
 
 
-def balanced_symbols(symbol_string):
+def balanced_symbols(symbol_string: str) -> bool:
     stack = Stack()
 
     # Map each closing symbol to its matching opening symbol.

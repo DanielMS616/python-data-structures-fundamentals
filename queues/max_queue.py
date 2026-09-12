@@ -2,11 +2,11 @@ from collections import deque
 
 
 class MaxQueue:
-    def __init__(self):
-        self.queue = deque()
-        self.max_queue = deque()
+    def __init__(self) -> None:
+        self.queue: deque[int] = deque()
+        self.max_queue: deque[int] = deque()
 
-    def enqueue(self, item):
+    def enqueue(self, item: int) -> None:
         self.queue.append(item)
 
         # Remove values that can no longer become the maximum.
@@ -15,7 +15,7 @@ class MaxQueue:
 
         self.max_queue.append(item)
 
-    def dequeue(self):
+    def dequeue(self) -> int | None:
         if not self.queue:
             return None
 
@@ -27,7 +27,7 @@ class MaxQueue:
 
         return item
 
-    def get_max(self):
+    def get_max(self) -> int | None:
         if not self.max_queue:
             return None
 
