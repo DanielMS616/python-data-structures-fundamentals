@@ -35,10 +35,10 @@ class MaxQueue:
         return self.max_queue[0]
 
 
-# Test
-mq = MaxQueue()
+if __name__ == "__main__":
+    mq = MaxQueue()
 
-mq.enqueue(3)
-mq.enqueue(1)
+    mq.enqueue(3)
+    mq.enqueue(1)
 
-print(mq.get_max())  # Expected: 3
+    print(mq.get_max())  # Expected: 3

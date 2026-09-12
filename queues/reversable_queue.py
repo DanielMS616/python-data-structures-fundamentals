@@ -30,13 +30,13 @@ class ReversableQueue:
             self.queue[index] = stack.pop()
 
 
-# Test
-rq = ReversableQueue()
+if __name__ == "__main__":
+    rq = ReversableQueue()
 
-rq.enqueue(1)
-rq.enqueue(2)
-rq.enqueue(3)
+    rq.enqueue(1)
+    rq.enqueue(2)
+    rq.enqueue(3)
 
-rq.reverse_first_k(2)
+    rq.reverse_first_k(2)
 
-print(rq.dequeue())  # Expected: 2
+    print(rq.dequeue())  # Expected: 2

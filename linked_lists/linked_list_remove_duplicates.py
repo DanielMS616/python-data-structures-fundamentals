@@ -49,18 +49,18 @@ class LinkedList:
         return "->".join(map(str, elements))
 
 
-# Test
-ll = LinkedList()
+if __name__ == "__main__":
+    ll = LinkedList()
 
-ll.append(5)
-ll.append(5)
-ll.append(6)
-ll.append(5)
-ll.append(7)
-ll.append(6)
+    ll.append(5)
+    ll.append(5)
+    ll.append(6)
+    ll.append(5)
+    ll.append(7)
+    ll.append(6)
 
-print(f"Before: {ll}")
+    print(f"Before: {ll}")
 
-ll.remove_duplicates()
+    ll.remove_duplicates()
 
-print(f"After:  {ll}")
+    print(f"After:  {ll}")

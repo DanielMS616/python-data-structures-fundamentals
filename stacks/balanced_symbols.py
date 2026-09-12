@@ -28,11 +28,11 @@ def balanced_symbols(symbol_string):
     return stack.is_empty()
 
 
-# Test
-print("The code should pass the following tests:")
-print(balanced_symbols(""))
-print(balanced_symbols("[[()]]"))
-print(balanced_symbols("[][][]()"))
-print(balanced_symbols("([)]"))
-print(balanced_symbols("((()])"))
-print(balanced_symbols("[{(]"))
+if __name__ == "__main__":
+    print("The code should pass the following tests:")
+    print(balanced_symbols(""))
+    print(balanced_symbols("[[()]]"))
+    print(balanced_symbols("[][][]()"))
+    print(balanced_symbols("([)]"))
+    print(balanced_symbols("((()])"))
+    print(balanced_symbols("[{(]"))

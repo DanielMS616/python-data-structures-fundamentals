@@ -23,15 +23,15 @@ class PriorityQueue:
         return item
 
 
-# Test
-pq = PriorityQueue()
+if __name__ == "__main__":
+    pq = PriorityQueue()
 
-pq.enqueue("A", 1)
-pq.enqueue("B", 3)
-pq.enqueue("C", 2)
-pq.enqueue("D", 2)
+    pq.enqueue("A", 1)
+    pq.enqueue("B", 3)
+    pq.enqueue("C", 2)
+    pq.enqueue("D", 2)
 
-print(pq.dequeue())  # Expected: A
-print(pq.dequeue())  # Expected: C
-print(pq.dequeue())  # Expected: D
-print(pq.dequeue())  # Expected: B
+    print(pq.dequeue())  # Expected: A
+    print(pq.dequeue())  # Expected: C
+    print(pq.dequeue())  # Expected: D
+    print(pq.dequeue())  # Expected: B

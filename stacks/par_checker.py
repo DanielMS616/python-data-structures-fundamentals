@@ -20,9 +20,9 @@ def par_checker(symbol_string):
     return stack.is_empty()
 
 
-# Test
-print("The code should pass the following tests:")
-print(f"((())): {par_checker('((()))')}")
-print(f"((()())): {par_checker('((()()))')}")
-print(f"((): {par_checker('(()')}")
-print(f")(: {par_checker(')(')}")
+if __name__ == "__main__":
+    print("The code should pass the following tests:")
+    print(f"((())): {par_checker('((()))')}")
+    print(f"((()())): {par_checker('((()()))')}")
+    print(f"((): {par_checker('(()')}")
+    print(f")(: {par_checker(')(')}")

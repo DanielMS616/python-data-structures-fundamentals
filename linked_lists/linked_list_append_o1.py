@@ -33,11 +33,11 @@ class LinkedList:
         return "->".join(map(str, elements))
 
 
-# Test
-ll = LinkedList()
+if __name__ == "__main__":
+    ll = LinkedList()
 
-ll.append(5)
-ll.append(6)
-ll.append(7)
+    ll.append(5)
+    ll.append(6)
+    ll.append(7)
 
-print(ll)
+    print(ll)
