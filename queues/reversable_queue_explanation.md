@@ -2,15 +2,19 @@
 
 ## Ziel der Übung
 
-Die Queue erhält eine Methode
+Die Queue erhält eine Methode:
 
 ```python
 reverse_first_k(k)
 ```
 
-mit der genau die ersten `k` Elemente umgedreht werden. Alle nachfolgenden Elemente behalten ihre Position relativ zueinander. Ein **Stack** darf als Hilfsstruktur eingesetzt werden.
+die genau die ersten `k` Elemente umkehrt.
 
-Zielkomplexitäten:
+Alle nachfolgenden Elemente behalten ihre relative Reihenfolge.
+
+Ein Stack darf als Hilfsstruktur eingesetzt werden.
+
+Die geforderten Zielkomplexitäten sind:
 
 ```text
 enqueue()         -> O(1)
@@ -30,102 +34,66 @@ Nachher:
 2 -> 1 -> 3
 ```
 
-Ein anschließendes `dequeue()` soll deshalb `2` zurückgeben.
+Die allgemeinen Grundlagen zu Queue/FIFO und Stack/LIFO stehen in [`README.md`](README.md) beziehungsweise [`../stacks/README.md`](../stacks/README.md).
+
+Hier liegt der Fokus auf der **Kombination beider Datenstrukturen** und darauf, die geforderte `O(k)`-Laufzeit tatsächlich einzuhalten.
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Hauptstruktur | Python-Liste als Queue |
+| Hilfsstruktur | Stack |
+| Muster | Stack als Umkehrmechanismus |
+| `enqueue()` | schulisch `O(1)`, technisch amortisiert `O(1)` |
+| `dequeue()` | `O(n)` |
+| `reverse_first_k()` | `O(k)` |
+| Zusatzspeicher | `O(k)` |
+| Kernidee | Erste `k` Werte per Index lesen, über LIFO rückwärts zurückschreiben |
+
+---
+
+## Relevante Implementierung
+
+Der entscheidende Teil der aktuellen Lösung ist:
 
 ```python
 from pythonds3.basic import Stack
 
 
 class ReversableQueue:
-    def __init__(self):
-        self.queue = []
+    def __init__(self) -> None:
+        self.queue: list[object] = []
 
-    def enqueue(self, item):
+    def enqueue(self, item: object) -> None:
         self.queue.append(item)
 
-    def dequeue(self):
+    def dequeue(self) -> object | None:
         if not self.queue:
             return None
 
-        # Removing index 0 shifts all remaining elements -> O(n).
         return self.queue.pop(0)
 
-    def reverse_first_k(self, k):
+    def reverse_first_k(self, k: int) -> None:
         if k < 0 or k > len(self.queue):
             raise ValueError("k must be between 0 and the queue length")
 
         stack = Stack()
 
-        # Store the first k elements on the stack.
         for index in range(k):
             stack.push(self.queue[index])
 
-        # LIFO writes the elements back in reverse order.
         for index in range(k):
             self.queue[index] = stack.pop()
-
-
-# Test
-rq = ReversableQueue()
-
-rq.enqueue(1)
-rq.enqueue(2)
-rq.enqueue(3)
-
-rq.reverse_first_k(2)
-
-print(rq.dequeue())  # Expected: 2
 ```
+
+Die vollständige und aktuelle Implementierung befindet sich in [`reversable_queue.py`](reversable_queue.py).
 
 ---
 
-## 1. Wiederholung: Queue und Stack
-
-Diese Aufgabe kombiniert zwei Datenstrukturen.
-
-### Queue
-
-Eine Queue arbeitet nach:
-
-```text
-FIFO
-First In, First Out
-```
-
-Das zuerst eingefügte Element wird zuerst wieder entfernt.
-
-Beispiel:
-
-```text
-1 -> 2 -> 3
-```
-
-Ein normales `dequeue()` entfernt:
-
-```text
-1
-```
-
-### Stack
-
-Ein Stack arbeitet nach:
-
-```text
-LIFO
-Last In, First Out
-```
-
-Das zuletzt eingefügte Element wird zuerst wieder entfernt.
-
-Genau diese Eigenschaft eignet sich zum Umkehren einer Reihenfolge.
-
----
-
-## 2. Was soll `reverse_first_k()` tun?
+## Was `reverse_first_k()` genau verändert
 
 Angenommen:
 
@@ -133,55 +101,59 @@ Angenommen:
 queue = [1, 2, 3, 4, 5]
 ```
 
-und wir rufen auf:
+und:
 
 ```python
 reverse_first_k(3)
 ```
 
-Dann sollen nur die ersten drei Elemente umgekehrt werden:
+wird aufgerufen.
 
-```text
-[3, 2, 1, 4, 5]
-```
-
-Die Elemente:
-
-```text
-4, 5
-```
-
-dürfen nicht verändert werden.
-
----
-
-## 3. Warum eignet sich ein Stack zum Umkehren?
-
-Die ersten drei Werte:
+Dann sollen nur:
 
 ```text
 1, 2, 3
 ```
 
-werden in dieser Reihenfolge auf den Stack gelegt:
+umgekehrt werden.
 
-```python
-stack.push(1)
-stack.push(2)
-stack.push(3)
-```
-
-Gedanklich sieht der Stack danach so aus:
+Ergebnis:
 
 ```text
-oben
+[3, 2, 1, 4, 5]
+```
+
+Der hintere Teil:
+
+```text
+4, 5
+```
+
+bleibt unverändert.
+
+---
+
+## Warum ein Stack geeignet ist
+
+Die ersten `k` Elemente werden in normaler Reihenfolge auf den Stack gelegt.
+
+Für:
+
+```text
+1, 2, 3
+```
+
+entsteht:
+
+```text
+Top
  ↓
 [3]
 [2]
 [1]
 ```
 
-Beim Entfernen mit `pop()` erhalten wir:
+Beim anschließenden `pop()` liefert der Stack:
 
 ```text
 3
@@ -189,26 +161,26 @@ Beim Entfernen mit `pop()` erhalten wir:
 1
 ```
 
-Der Stack liefert die Elemente also automatisch in umgekehrter Reihenfolge zurück.
+Damit entsteht die Umkehrung automatisch durch LIFO.
 
 ---
 
-## 4. Eingabe `k` prüfen
+## Eingabe `k` validieren
 
-Zuerst wird geprüft:
+Vor der eigentlichen Arbeit:
 
 ```python
 if k < 0 or k > len(self.queue):
     raise ValueError("k must be between 0 and the queue length")
 ```
 
-Bei:
+Gültig sind:
 
 ```text
-queue = [1, 2, 3]
+0 <= k <= len(queue)
 ```
 
-sind zum Beispiel diese Werte gültig:
+Beispiel bei drei Elementen:
 
 ```text
 k = 0
@@ -217,20 +189,18 @@ k = 2
 k = 3
 ```
 
-Ungültig wären:
+Ungültig:
 
 ```text
 k = -1
 k = 4
 ```
 
-Eine `ValueError` macht deutlich, dass die Methode zwar korrekt aufgerufen wurde, aber der übergebene Wert nicht zulässig ist.
+Eine `ValueError` macht sichtbar, dass der übergebene Parameter außerhalb des erlaubten Bereichs liegt.
 
 ---
 
-## 5. Die ersten k Elemente auf den Stack legen
-
-Der erste wichtige Abschnitt lautet:
+## Die ersten k Elemente lesen
 
 ```python
 for index in range(k):
@@ -244,33 +214,27 @@ queue = [1, 2, 3, 4, 5]
 k = 3
 ```
 
-erzeugt:
-
-```python
-range(3)
-```
-
-die Indizes:
+werden die Indizes:
 
 ```text
 0, 1, 2
 ```
 
-Damit werden diese Werte auf den Stack gelegt:
+gelesen.
+
+Dadurch landen:
 
 ```text
-1
-2
-3
+1, 2, 3
 ```
 
-Die Queue selbst wird dabei noch nicht verändert.
+auf dem Stack.
+
+Die Queue selbst wird in diesem Schritt noch nicht verändert.
 
 ---
 
-## 6. Die Werte rückwärts zurückschreiben
-
-Danach:
+## Werte rückwärts zurückschreiben
 
 ```python
 for index in range(k):
@@ -280,17 +244,13 @@ for index in range(k):
 Der Stack liefert:
 
 ```text
-3
-2
-1
+3, 2, 1
 ```
 
-Diese Werte werden wieder auf die Positionen:
+Diese Werte werden zurück auf die Positionen:
 
 ```text
-0
-1
-2
+0, 1, 2
 ```
 
 geschrieben.
@@ -307,36 +267,44 @@ wird:
 [3, 2, 1, 4, 5]
 ```
 
-Der hintere Teil der Queue bleibt unangetastet.
+Nur der gewünschte Prefix wird verändert.
 
 ---
 
-## 7. Warum verwenden wir direkten Indexzugriff?
+## Warum direkter Indexzugriff wichtig ist
 
-Eine zunächst naheliegende Lösung wäre:
+Eine zunächst intuitive Variante wäre:
 
 ```python
 for _ in range(k):
     stack.push(self.queue.pop(0))
 ```
 
-Das wäre funktional verständlich, hätte aber ein Laufzeitproblem.
+Das würde die ersten Werte tatsächlich entfernen.
 
-Bei einer Python-Liste kostet:
+Das Problem ist jedoch:
 
 ```python
-pop(0)
+list.pop(0)
 ```
+
+kostet:
 
 ```text
 O(n)
 ```
 
-weil alle nachfolgenden Elemente eine Position nach vorne verschoben werden müssen.
+weil die verbleibenden Elemente verschoben werden müssen.
 
-Wenn wir das `k`-mal ausführen, würde `reverse_first_k()` nicht mehr die geforderte Laufzeit `O(k)` erreichen.
+Würde diese Operation `k`-mal ausgeführt, wäre die geforderte:
 
-Deshalb verwenden wir:
+```text
+O(k)
+```
+
+Laufzeit nicht mehr garantiert.
+
+Deshalb verwendet die Lösung:
 
 ```python
 self.queue[index]
@@ -356,31 +324,28 @@ O(1)
 
 ---
 
-## 8. Warum sind zwei k-Schleifen trotzdem O(k)?
+## Warum zwei Schleifen trotzdem O(k) sind
 
-Wir haben zwei Schleifen:
+Die Methode besitzt zwei Schleifen über `k` Elemente:
 
-```python
-for index in range(k):
+```text
+erste Schleife  -> k Schritte
+zweite Schleife -> k Schritte
 ```
 
-Die erste läuft `k`-mal.
-
-Die zweite läuft ebenfalls `k`-mal.
-
-Damit ergibt sich:
+Damit:
 
 ```text
 k + k = 2k
 ```
 
-In der Big-O-Notation werden konstante Faktoren ignoriert:
+In Big O werden konstante Faktoren ignoriert:
 
 ```text
 O(2k) = O(k)
 ```
 
-Deshalb ist die gesamte Methode:
+Die Gesamtmethode bleibt deshalb:
 
 ```text
 reverse_first_k() -> O(k)
@@ -388,59 +353,7 @@ reverse_first_k() -> O(k)
 
 ---
 
-## 9. Verwendeter Testfall
-
-Der tatsächliche Testcode verwendet:
-
-```python
-rq.enqueue(1)
-rq.enqueue(2)
-rq.enqueue(3)
-
-rq.reverse_first_k(2)
-```
-
-Vorher:
-
-```text
-[1, 2, 3]
-```
-
-Die ersten zwei Elemente:
-
-```text
-1, 2
-```
-
-werden über den Stack umgedreht.
-
-Danach:
-
-```text
-[2, 1, 3]
-```
-
-Nun:
-
-```python
-rq.dequeue()
-```
-
-entfernt das erste Element.
-
-Ausgabe:
-
-```text
-2
-```
-
-Genau das wird von der Aufgabe erwartet.
-
----
-
-## 10. Zusätzliches Erklärbeispiel
-
-Das folgende Beispiel gehört **nicht zum Testcode der Aufgabe**. Es dient nur dazu, das Verhalten bei einem größeren `k` zu verdeutlichen.
+## Beispiel
 
 Ausgangslage:
 
@@ -454,13 +367,13 @@ Aufruf:
 reverse_first_k(4)
 ```
 
-Die ersten vier Werte:
+Der Prefix:
 
 ```text
 10, 20, 30, 40
 ```
 
-werden umgekehrt.
+wird umgekehrt.
 
 Ergebnis:
 
@@ -468,47 +381,19 @@ Ergebnis:
 [40, 30, 20, 10, 50]
 ```
 
-Das letzte Element:
-
-```text
-50
-```
-
-bleibt unverändert.
+Das letzte Element bleibt unverändert.
 
 ---
 
-## 11. Laufzeit von `dequeue()`
+## Komplexität
 
-Die Methode verwendet:
-
-```python
-self.queue.pop(0)
-```
-
-Bei einer Python-Liste liegt das erste Element an Index `0`.
-
-Wird es entfernt, müssen alle verbleibenden Elemente nach vorne verschoben werden.
-
-Deshalb gilt:
-
-```text
-dequeue() -> O(n)
-```
-
-Das entspricht der Vorgabe der Aufgabe.
-
----
-
-## 12. Laufzeit von `enqueue()`
-
-Die Methode verwendet:
+### `enqueue()`
 
 ```python
 self.queue.append(item)
 ```
 
-In typischen Big-O-Übungen wird das Anhängen an eine Python-Liste als:
+In typischen Grundlagenaufgaben wird dies als:
 
 ```text
 O(1)
@@ -516,89 +401,78 @@ O(1)
 
 behandelt.
 
-Technisch genauer ist `list.append()` allerdings:
+Technisch präziser gilt für eine Python-Liste:
 
 ```text
 amortisiert O(1)
 ```
 
-Denn gelegentlich muss Python intern mehr Speicher für die Liste reservieren.
+weil gelegentlich interner Speicher vergrößert werden muss.
 
-Die Aufgabenstellung spricht ausdrücklich von **Worst-Case O(1)**. Streng technisch erfüllt eine normale Python-Liste diese Formulierung nicht garantiert.
-
-Für den hier vorgegebenen Lernkontext ist aber offensichtlich die übliche vereinfachte Betrachtung gemeint:
+Damit unterscheiden wir bewusst:
 
 ```text
-append() -> O(1)
+Schulmodell        -> O(1)
+technische Präzision -> amortisiert O(1)
 ```
 
-Diese Feinheit ist wichtig zu kennen, muss die Schul-Lösung aber nicht unnötig verkomplizieren.
+### `dequeue()`
 
----
+```python
+self.queue.pop(0)
+```
 
-## 13. Gesamte Laufzeiten
+entfernt das erste Listenelement.
 
-Für die in der Aufgabe erwartete Betrachtung:
+Alle nachfolgenden Werte müssen verschoben werden:
 
 ```text
-enqueue()         -> O(1)
-dequeue()         -> O(n)
+dequeue() -> O(n)
+```
+
+### `reverse_first_k()`
+
+Zwei lineare Durchläufe über genau `k` Positionen:
+
+```text
 reverse_first_k() -> O(k)
 ```
 
-Technische Präzisierung:
+### Zusatzspeicher
 
-```text
-list.append() -> amortisiert O(1)
-```
-
----
-
-## 14. Speicherkomplexität von `reverse_first_k()`
-
-Der Stack speichert genau die ersten `k` Elemente.
-
-Deshalb benötigt die Methode zusätzlichen Speicher von:
+Der Stack speichert maximal genau `k` Elemente:
 
 ```text
 O(k)
 ```
 
-Es wird keine vollständige Kopie der Queue erstellt.
+Es wird keine vollständige Kopie der Queue erzeugt.
 
 ---
 
-## 15. Sonderfall: k = 0
+## Randfälle
 
-Bei:
+### `k = 0`
 
 ```python
 reverse_first_k(0)
 ```
 
-läuft keine der beiden Schleifen.
+Keine der beiden Schleifen läuft.
 
 Die Queue bleibt unverändert.
 
-Das ist korrekt.
-
 ---
 
-## 16. Sonderfall: k = 1
+### `k = 1`
 
 Ein einzelnes Element umzukehren verändert nichts.
 
-Beispiel:
-
 ```text
 [1, 2, 3]
 ```
 
-bleibt nach:
-
-```python
-reverse_first_k(1)
-```
+bleibt:
 
 ```text
 [1, 2, 3]
@@ -606,151 +480,193 @@ reverse_first_k(1)
 
 ---
 
-## 17. Sonderfall: k entspricht der gesamten Queue-Länge
+### `k == len(queue)`
 
-Bei:
+Dann wird die komplette Queue umgekehrt.
 
 ```text
-queue = [1, 2, 3]
+[1, 2, 3]
 ```
 
-und:
-
-```python
-reverse_first_k(3)
-```
-
-wird die gesamte Queue umgekehrt:
+wird zu:
 
 ```text
 [3, 2, 1]
 ```
 
-Auch dieser Fall funktioniert ohne Sonderlogik.
-
 ---
 
-## 18. Fehlerfälle
+### Ungültiges `k`
 
-Zwei problematische Werte werden ausdrücklich abgefangen:
+Für:
 
 ```text
 k < 0
+```
+
+oder:
+
+```text
 k > len(queue)
 ```
 
-Beispiel:
-
-```python
-reverse_first_k(10)
-```
-
-bei nur drei Elementen ist nicht sinnvoll.
-
-Die Methode löst deshalb eine:
+wird:
 
 ```python
 ValueError
 ```
 
-aus.
+ausgelöst.
 
-Das ist robuster, als einen ungültigen Aufruf stillschweigend zu ignorieren.
+Dieser Fehlerfall ist Teil der aktuellen Schnittstelle und wird automatisiert getestet.
 
 ---
 
-## 19. Design- und Skalierungsgedanke
+## Typvertrag
 
-Diese Aufgabe zeigt sehr gut, dass eine funktionierende Lösung nicht automatisch auch die geforderte Laufzeit besitzt.
+Die aktuelle Methode lautet:
 
-Zum Beispiel wäre:
+```python
+def reverse_first_k(self, k: int) -> None:
+```
+
+Damit ist sichtbar:
+
+```text
+k
+→ Integer
+
+Rückgabewert
+→ keiner; die bestehende Queue wird verändert
+```
+
+Die Queue selbst speichert aktuell:
+
+```python
+list[object]
+```
+
+und ist damit nicht auf einen einzelnen Nutzdatentyp beschränkt.
+
+---
+
+## Tests
+
+Der ursprüngliche Lernfall verwendet:
+
+```text
+[1, 2, 3]
+```
+
+mit:
+
+```python
+reverse_first_k(2)
+```
+
+und erwartet danach:
+
+```text
+[2, 1, 3]
+```
+
+beziehungsweise beim nächsten `dequeue()`:
+
+```text
+2
+```
+
+Die Implementierung wird inzwischen zusätzlich automatisiert mit `pytest` geprüft:
+
+[`../tests/test_queues.py`](../tests/test_queues.py)
+
+Dort werden unter anderem getestet:
+
+```text
+normale Umkehrung
+k = 0
+negatives k
+k größer als die Queue-Länge
+```
+
+---
+
+## Design- und Skalierungsgedanke
+
+Diese Aufgabe zeigt besonders gut:
+
+> Eine funktionierende Lösung erfüllt nicht automatisch die geforderte Komplexität.
+
+Ein wiederholtes:
 
 ```python
 pop(0)
 ```
 
-ein naheliegender Weg, Elemente vorne aus der Queue zu nehmen.
+wäre logisch nachvollziehbar, aber asymptotisch zu teuer.
 
-Innerhalb von `reverse_first_k()` wäre das jedoch ungünstig, weil jede Entfernung:
-
-```text
-O(n)
-```
-
-kostet.
-
-Stattdessen nutzen wir direkten Indexzugriff:
+Die eigentliche Designfrage lautet daher:
 
 ```text
-O(1)
+Welche Operationen stellt meine konkrete Datenstruktur günstig bereit?
 ```
 
-und kombinieren ihn mit einem Stack.
+Hier ist:
 
-Die entscheidende Frage lautet also:
+```text
+Listenindex lesen/schreiben -> O(1)
+pop(0)                      -> O(n)
+```
 
-> Welche Operationen meiner gewählten Datenstruktur sind günstig und welche sind teuer?
-
-Dieses Denken wird später auch bei Datenbanken, Caches und Backend-Systemen wichtig.
+Die Wahl der Operationen ist deshalb genauso wichtig wie die grobe algorithmische Idee.
 
 ---
 
-## 20. Warum die Klasse `ReversableQueue` heißt
+## Warum die Klasse `ReversableQueue` heißt
 
-Im Startercode lautet der Klassenname:
+Der vorgegebene Klassenname lautet:
 
 ```python
 ReversableQueue
 ```
 
-Wir behalten diesen Namen bei, damit die Lösung zur Aufgabenstellung passt.
-
-Im Englischen wäre die üblichere Schreibweise allerdings:
+Die üblichere englische Schreibweise wäre:
 
 ```python
 ReversibleQueue
 ```
 
-Für eine eigene Anwendung würde man eher diese Schreibweise wählen.
+Der Name bleibt in diesem Lernbeispiel bewusst erhalten, damit die Implementierung mit der ursprünglichen Übungsstruktur konsistent bleibt.
 
-Für die Schulaufgabe sollte der vorgegebene Name nicht ohne Grund geändert werden.
+In neuem produktivem Code würde man die korrekte Schreibweise bevorzugen.
 
 ---
 
-## Zusammenfassung
-
-Die Methode kombiniert eine Queue mit einem Stack.
-
-Die ersten `k` Elemente werden auf den Stack gelegt:
-
-```python
-for index in range(k):
-    stack.push(self.queue[index])
-```
-
-Anschließend werden sie durch LIFO in umgekehrter Reihenfolge zurückgeschrieben:
-
-```python
-for index in range(k):
-    self.queue[index] = stack.pop()
-```
-
-Dadurch bleibt der Rest der Queue unverändert.
-
-Für die erwartete Betrachtung ergeben sich:
-
-```text
-enqueue()         -> O(1)
-dequeue()         -> O(n)
-reverse_first_k() -> O(k)
-```
-
-Der zusätzliche Speicher für die Umkehrung beträgt:
-
-```text
-O(k)
-```
+## Zentrale Lernidee
 
 Die zentrale Erkenntnis lautet:
 
-> **Durch die Kombination aus direktem Listenindex und dem LIFO-Prinzip eines Stacks lassen sich genau die ersten k Elemente in O(k) umkehren, ohne den restlichen Teil der Queue zu verändern.**
+> **Durch die Kombination aus direktem Listenindex und dem LIFO-Prinzip eines Stacks lassen sich genau die ersten k Elemente in O(k) umkehren.**
+
+Dabei werden zwei Ebenen kombiniert:
+
+```text
+Stack
+→ liefert die umgekehrte Reihenfolge
+
+direkter Listenindex
+→ erhält die geforderte Laufzeit
+```
+
+Die Übung zeigt damit sehr gut, wie mehrere Datenstrukturen und ihre jeweiligen Operationseigenschaften gemeinsam eine Lösung formen.
+
+---
+
+## Weiterführend
+
+- [`README.md`](README.md) – Queue, FIFO und Implementierungsvarianten
+- [`../stacks/README.md`](../stacks/README.md) – Stack und LIFO
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – Stack als Umkehrmechanismus
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – Laufzeitanalyse und amortisierte Komplexität
+- [`../docs/python_collections_complexity.md`](../docs/python_collections_complexity.md) – Kosten von Listenoperationen
+- [`../tests/test_queues.py`](../tests/test_queues.py) – automatisierte Tests

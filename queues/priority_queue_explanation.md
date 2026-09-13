@@ -2,9 +2,19 @@
 
 ## Ziel der Übung
 
-Die Queue soll Elemente nach einer numerischen **Priorität** verarbeiten, wobei `1` die höchste Priorität bezeichnet. Haben zwei Elemente denselben Prioritätswert, bleibt ihre FIFO-Reihenfolge erhalten.
+Die Queue soll Elemente nach einer numerischen **Priorität** verarbeiten.
 
-Für die Implementierung gelten diese Zielkomplexitäten:
+Dabei gilt:
+
+```text
+1 = höchste Priorität
+2 = danach
+3 = niedriger
+```
+
+Haben zwei Elemente dieselbe Priorität, bleibt ihre ursprüngliche FIFO-Reihenfolge erhalten.
+
+Die geforderten Zielkomplexitäten sind:
 
 ```text
 enqueue() -> höchstens O(n log n)
@@ -20,7 +30,7 @@ pq.enqueue("C", 2)
 pq.enqueue("D", 2)
 ```
 
-Die gewünschte Entnahmereihenfolge ist:
+Gewünschte Entnahmereihenfolge:
 
 ```text
 A
@@ -29,137 +39,102 @@ D
 B
 ```
 
-`A` kommt wegen Priorität `1` zuerst.
+Die allgemeinen Grundlagen von Queues und FIFO sind in [`README.md`](README.md) zusammengefasst.
 
-`C` und `D` haben beide Priorität `2`. Da `C` früher eingefügt wurde, muss `C` vor `D` entfernt werden.
+Hier liegt der Fokus auf der **Kombination aus Priorität, stabiler Einfügereihenfolge und bewusst verteilter Rechenarbeit**.
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Datenstruktur | sortierte Python-Liste |
+| gespeicherte Form | `(priority, counter, item)` |
+| Muster | Priorität + stabiler Counter |
+| `enqueue()` | `O(n log n)` |
+| `dequeue()` | `O(1)` |
+| Zusatzspeicher | `O(n)` |
+| Kernidee | Beim Einfügen sortieren, damit das nächste Element am Listenende liegt |
+| Wichtige Invariante | Bei gleicher Priorität entscheidet die kleinere Counter-Zahl |
+
+---
+
+## Relevante Implementierung
+
+Der entscheidende Teil der aktuellen Lösung ist:
 
 ```python
 class PriorityQueue:
-    def __init__(self):
-        self.queue = []
-        self.counter = 0
+    def __init__(self) -> None:
+        self.queue: list[tuple[int, int, object]] = []
+        self.counter: int = 0
 
-    def enqueue(self, item, priority):
-        # The counter preserves FIFO order for equal priorities.
+    def enqueue(self, item: object, priority: int) -> None:
         self.queue.append((priority, self.counter, item))
         self.counter += 1
 
-        # Keep the next item to remove at the end of the list.
         self.queue.sort(
             key=lambda element: (element[0], element[1]),
             reverse=True,
         )
 
-    def dequeue(self):
+    def dequeue(self) -> object | None:
         if not self.queue:
             return None
 
-        # pop() at the end of a Python list is O(1).
         _, _, item = self.queue.pop()
         return item
-
-
-# Test
-pq = PriorityQueue()
-
-pq.enqueue("A", 1)
-pq.enqueue("B", 3)
-pq.enqueue("C", 2)
-pq.enqueue("D", 2)
-
-print(pq.dequeue())  # Expected: A
-print(pq.dequeue())  # Expected: C
-print(pq.dequeue())  # Expected: D
-print(pq.dequeue())  # Expected: B
 ```
+
+Die vollständige und aktuelle Implementierung befindet sich in [`priority_queue.py`](priority_queue.py).
 
 ---
 
-# 1. Wiederholung: Was ist eine normale Queue?
+## Was ändert sich gegenüber einer normalen Queue?
 
-Eine normale Warteschlange arbeitet nach:
+Bei einer normalen Queue entscheidet ausschließlich die Einfügereihenfolge.
+
+Eine Priority Queue fügt davor ein zusätzliches Kriterium ein:
 
 ```text
-FIFO
-First In, First Out
+1. Priorität
+2. bei Gleichstand: Einfügereihenfolge
 ```
-
-Das bedeutet:
-
-> Das zuerst eingefügte Element wird zuerst wieder entfernt.
 
 Beispiel:
-
-```text
-A -> B -> C
-```
-
-Beim ersten `dequeue()` würde `A` entfernt.
-
----
-
-# 2. Was ändert sich bei einer Priority Queue?
-
-Bei einer Prioritätswarteschlange entscheidet zuerst die **Priorität**.
-
-In dieser Aufgabe gilt:
-
-```text
-1 = höchste Priorität
-2 = danach
-3 = niedriger
-```
-
-Damit wird zum Beispiel:
 
 ```text
 A, Priorität 1
 B, Priorität 3
 C, Priorität 2
+D, Priorität 2
 ```
 
-nicht einfach nach Einfügereihenfolge entfernt, sondern:
+führt zu:
 
 ```text
 A
 C
+D
 B
 ```
 
+`C` und `D` besitzen dieselbe Priorität. Deshalb muss zwischen ihnen weiterhin FIFO gelten.
+
 ---
 
-# 3. Warum brauchen wir zusätzlich einen Counter?
+## Warum ein Counter notwendig ist
 
-Nur die Priorität zu speichern reicht nicht aus.
+Nur die Priorität zu speichern reicht nicht aus, wenn die Einfügereihenfolge bei Gleichstand **explizit Teil des Datenmodells** sein soll.
 
-Angenommen:
-
-```python
-pq.enqueue("C", 2)
-pq.enqueue("D", 2)
-```
-
-Beide Elemente haben dieselbe Priorität.
-
-Die Aufgabenstellung verlangt:
-
-```text
-C vor D
-```
-
-weil `C` zuerst eingefügt wurde.
-
-Darum bekommt jedes Element zusätzlich eine fortlaufende Nummer:
+Jedes Element erhält deshalb eine fortlaufende Nummer:
 
 ```python
 self.counter
 ```
 
-Die gespeicherten Tupel sehen dann zum Beispiel so aus:
+Die gespeicherten Tupel sehen zum Beispiel so aus:
 
 ```text
 A -> (1, 0, "A")
@@ -168,17 +143,17 @@ C -> (2, 2, "C")
 D -> (2, 3, "D")
 ```
 
-Dabei bedeutet:
+Bedeutung:
 
 ```text
 (priority, insertion_order, item)
 ```
 
+Bei gleicher Priorität gewinnt damit die kleinere Counter-Zahl.
+
 ---
 
-# 4. Warum funktioniert der Counter als FIFO-Regel?
-
-Bei gleicher Priorität entscheidet die kleinere Counter-Zahl.
+## Warum der Counter FIFO stabil hält
 
 Für:
 
@@ -187,29 +162,23 @@ C -> (2, 2, "C")
 D -> (2, 3, "D")
 ```
 
-wurde `C` früher eingefügt.
+haben beide Elemente dieselbe Priorität.
 
-Deshalb soll das Tupel mit:
-
-```text
-counter = 2
-```
-
-vor dem Tupel mit:
+`C` besitzt aber den kleineren Counter:
 
 ```text
-counter = 3
+2 < 3
 ```
 
-entfernt werden.
+und wurde deshalb früher eingefügt.
 
-Der Counter speichert also die ursprüngliche Einfügereihenfolge.
+Die Einfügereihenfolge ist damit nicht nur implizit vorhanden, sondern als Metadatum gespeichert.
 
 ---
 
-# 5. Warum sortieren wir die Liste rückwärts?
+## Warum rückwärts sortiert wird
 
-Wir sortieren so:
+Die Liste wird so sortiert:
 
 ```python
 self.queue.sort(
@@ -218,16 +187,11 @@ self.queue.sort(
 )
 ```
 
-Die Sortierung betrachtet zuerst:
+Der Sortierschlüssel betrachtet:
 
 ```text
-priority
-```
-
-und bei gleicher Priorität:
-
-```text
-counter
+1. priority
+2. counter
 ```
 
 Durch:
@@ -236,9 +200,9 @@ Durch:
 reverse=True
 ```
 
-stehen die größeren Werte vorne.
+stehen größere Werte weiter vorne.
 
-Nach den vier Testeinfügungen sieht die interne Liste ungefähr so aus:
+Nach den vier Beispiel-Einfügungen sieht die Liste ungefähr so aus:
 
 ```python
 [
@@ -249,19 +213,17 @@ Nach den vier Testeinfügungen sieht die interne Liste ungefähr so aus:
 ]
 ```
 
-Die nächste zu entfernende Position liegt damit immer **am Ende der Liste**.
+Das als Nächstes benötigte Element liegt bewusst **am Listenende**.
 
 ---
 
-# 6. Warum liegt das wichtigste Element am Ende?
+## Warum das wichtigste Element am Ende liegt
 
-Wir wollen `dequeue()` in:
+Die Aufgabe verlangt:
 
 ```text
-O(1)
+dequeue() -> O(1)
 ```
-
-ausführen.
 
 Bei einer Python-Liste ist:
 
@@ -275,7 +237,7 @@ am Listenende:
 O(1)
 ```
 
-Deshalb sortieren wir die Daten absichtlich so, dass das nächste Element immer ganz hinten liegt.
+Deshalb wird die Sortierreihenfolge so gewählt, dass das nächste Element immer genau dort liegt.
 
 Dann reicht:
 
@@ -285,33 +247,31 @@ _, _, item = self.queue.pop()
 
 ---
 
-# 7. Warum nicht vorne entfernen?
+## Warum nicht vorne entfernen?
 
-Man könnte die Liste auch so sortieren, dass das wichtigste Element vorne steht.
+Eine alternative Sortierung könnte das wichtigste Element an Index `0` ablegen.
 
-Dann müsste man aber:
+Dann wäre nötig:
 
 ```python
 self.queue.pop(0)
 ```
 
-verwenden.
-
-Das wäre:
+Bei einer Python-Liste ist das:
 
 ```text
 O(n)
 ```
 
-weil alle verbleibenden Elemente intern nach vorne verschoben werden müssen.
+weil die verbleibenden Elemente verschoben werden müssen.
 
-Damit würde die Anforderung der Aufgabe verletzt.
+Damit würde die zentrale Laufzeitanforderung verletzt.
 
 ---
 
-# 8. Schritt für Schritt durch den Test
+## Schritt für Schritt am Beispiel
 
-Wir fügen ein:
+Einfügungen:
 
 ```python
 pq.enqueue("A", 1)
@@ -320,7 +280,7 @@ pq.enqueue("C", 2)
 pq.enqueue("D", 2)
 ```
 
-Intern:
+Gespeicherte Metadaten:
 
 ```text
 A -> (1, 0, "A")
@@ -329,18 +289,7 @@ C -> (2, 2, "C")
 D -> (2, 3, "D")
 ```
 
-Nach der Sortierung:
-
-```text
-[
-    B,
-    D,
-    C,
-    A
-]
-```
-
-genauer:
+Sortierte interne Liste:
 
 ```python
 [
@@ -351,53 +300,13 @@ genauer:
 ]
 ```
 
----
-
-## Erstes `dequeue()`
+Jedes:
 
 ```python
 self.queue.pop()
 ```
 
-entfernt:
-
-```text
-A
-```
-
----
-
-## Zweites `dequeue()`
-
-Jetzt liegt am Ende:
-
-```text
-C
-```
-
-also wird `C` entfernt.
-
----
-
-## Drittes `dequeue()`
-
-Danach:
-
-```text
-D
-```
-
----
-
-## Viertes `dequeue()`
-
-Zuletzt:
-
-```text
-B
-```
-
-Ergebnis:
+entfernt nun nacheinander:
 
 ```text
 A
@@ -406,22 +315,46 @@ D
 B
 ```
 
-Genau wie gefordert.
+---
+
+## Warum `_, _, item`?
+
+Intern speichern wir:
+
+```python
+(priority, counter, item)
+```
+
+Beim Entfernen interessiert die öffentliche Queue-Schnittstelle aber nur das eigentliche Element.
+
+Darum:
+
+```python
+_, _, item = self.queue.pop()
+```
+
+Der Unterstrich `_` signalisiert:
+
+> Dieser Wert wird bewusst nicht weiter verwendet.
+
+Damit bleiben die internen Metadaten verborgen und nur `item` wird zurückgegeben.
 
 ---
 
-# 9. Laufzeit von `enqueue()`
+## Komplexität
 
-Beim Einfügen passiert zuerst:
+### `enqueue()`
+
+Zunächst:
 
 ```python
 self.queue.append(...)
 ```
 
-Das ist bei Python-Listen amortisiert:
+Das ist bei Python-Listen:
 
 ```text
-O(1)
+amortisiert O(1)
 ```
 
 Danach:
@@ -430,294 +363,250 @@ Danach:
 self.queue.sort(...)
 ```
 
-Für `list.sort()` gilt im allgemeinen Fall:
+Für `list.sort()` gilt im Worst Case:
 
 ```text
 O(n log n)
 ```
 
-Damit dominiert die Sortierung.
-
-Also:
+Die Sortierung dominiert daher:
 
 ```text
 enqueue() -> O(n log n)
 ```
 
-Das entspricht der Aufgabenstellung.
-
----
-
-# 10. Laufzeit von `dequeue()`
-
-`dequeue()` verwendet:
+### `dequeue()`
 
 ```python
 self.queue.pop()
 ```
 
-am Listenende.
-
-Das ist:
+am Listenende:
 
 ```text
 O(1)
 ```
 
-Damit erfüllt die Methode die wichtigste Laufzeitanforderung:
+Damit:
 
 ```text
 dequeue() -> O(1)
 ```
 
+### Speicher
+
+Für jedes Queue-Element wird ein Tupel gespeichert:
+
+```text
+(priority, counter, item)
+```
+
+Die Zahl der Tupel wächst mit `n`.
+
+Damit:
+
+```text
+O(n)
+```
+
+Der einzelne Klassen-Counter verändert die asymptotische Speicherkomplexität nicht.
+
 ---
 
-# 11. Fehlerfall: Leere Warteschlange
+## Leere Queue
 
-Wenn:
+Bei:
 
 ```python
 dequeue()
 ```
 
-auf einer leeren Queue aufgerufen wird, gibt es kein Element zum Entfernen.
-
-Wir prüfen deshalb:
+auf einer leeren Queue gilt:
 
 ```python
 if not self.queue:
     return None
 ```
 
-Für diese Schulaufgabe ist `None` eine einfache und nachvollziehbare Lösung.
+`None` ist damit Teil der aktuellen Schnittstellenentscheidung.
 
-In einer größeren Anwendung könnte man auch bewusst eine Exception auslösen.
-
-Das wäre eine Designentscheidung der Schnittstelle.
+Eine andere Implementierung könnte stattdessen eine Exception verwenden.
 
 ---
 
-# 12. Warum verwenden wir `_, _, item`?
+## Eingabevalidierung
 
-Intern speichern wir:
+Die aktuelle Signatur lautet:
 
 ```python
-(priority, counter, item)
+enqueue(self, item: object, priority: int) -> None
 ```
 
-Beim Entfernen interessiert uns aber nur:
+Sie dokumentiert, dass:
 
 ```text
 item
+→ beliebiges Objekt
+
+priority
+→ Integer
 ```
 
-Darum schreiben wir:
+erwartet wird.
 
-```python
-_, _, item = self.queue.pop()
+Aktuell wird nicht zusätzlich geprüft:
+
+```text
+ob priority positiv ist
+ob 1 der kleinste erlaubte Wert sein muss
+ob bestimmte Prioritätsbereiche gelten
 ```
 
-Der Unterstrich `_` signalisiert:
+Für die Lernübung reicht der dokumentierte Vertrag aus.
 
-> Dieser Wert wird absichtlich nicht weiter verwendet.
-
-Das ist in Python eine übliche Schreibweise.
+In einer produktiven API müssten gültige Prioritätswerte explizit definiert und gegebenenfalls validiert werden.
 
 ---
 
-# 13. Warum nicht einfach nur nach Priorität sortieren?
+## Warum diese Lösung die Arbeit bewusst verschiebt
 
-Zum Beispiel:
-
-```python
-self.queue.sort(key=lambda element: element[0])
-```
-
-würde nur die Priorität betrachten.
-
-Dann wäre die gewünschte Reihenfolge bei identischen Prioritäten nicht ausdrücklich Teil unseres Datenmodells.
-
-Der Counter macht die Regel dagegen klar und zuverlässig:
+Man könnte beim Einfügen nur:
 
 ```text
-Priorität zuerst
-Einfügereihenfolge danach
+append
 ```
 
-Damit ist die FIFO-Anforderung bei gleicher Priorität direkt im Sortierschlüssel enthalten.
+verwenden und das wichtigste Element erst beim `dequeue()` suchen.
+
+Dann wäre:
+
+```text
+enqueue() -> günstig
+dequeue() -> O(n)
+```
+
+Die Aufgabe verlangt jedoch:
+
+```text
+enqueue() -> darf teurer sein
+dequeue() -> muss O(1) sein
+```
+
+Deshalb wird die aufwendige Sortierung bewusst in `enqueue()` verschoben.
+
+Das ist ein allgemeines Designmuster:
+
+> Rechenarbeit kann gezielt in die Operation verlagert werden, bei der sie weniger kritisch ist.
 
 ---
 
-# 14. Design- und Skalierungsgedanke
+## Skalierung: wäre ein Heap besser?
 
-Die Aufgabe zwingt uns zu einer bewussten Entscheidung:
-
-> Wann soll die aufwendigere Arbeit stattfinden?
-
-Wir könnten beim Einfügen nur anhängen:
+Für die konkrete Aufgabenstellung ist die sortierte Liste passend, weil:
 
 ```text
-enqueue -> sehr günstig
+enqueue() -> O(n log n)
 ```
 
-und erst beim Entfernen das Element mit der höchsten Priorität suchen.
+ausdrücklich erlaubt ist.
 
-Dann wäre aber:
+Für eine allgemeine Priority Queue mit großen Datenmengen wäre Sortieren nach **jedem** Einfügen jedoch nicht optimal.
 
-```text
-dequeue -> O(n)
-```
-
-Die Aufgabenstellung verlangt genau das Gegenteil:
-
-```text
-enqueue -> darf teurer sein
-dequeue -> muss O(1) sein
-```
-
-Deshalb sortieren wir beim Einfügen.
-
-Das ist ein wichtiger allgemeiner Software-Engineering-Gedanke:
-
-> Man kann Rechenarbeit bewusst in die Operation verschieben, bei der sie weniger kritisch ist.
-
----
-
-# 15. Skalierbarkeit: Ist Sortieren bei jedem Einfügen optimal?
-
-Für die konkrete Aufgabe ist diese Lösung passend, weil ausdrücklich erlaubt wird:
-
-```text
-enqueue -> O(n log n)
-```
-
-Bei sehr großen Datenmengen wäre es jedoch nicht unbedingt die effizienteste allgemeine Priority-Queue-Implementierung.
-
-In der Praxis verwendet man dafür häufig spezielle Datenstrukturen wie einen:
+In der Praxis wird häufig ein:
 
 ```text
 Heap
 ```
 
-Ein Heap kann Einfügen und Entfernen typischerweise effizienter organisieren.
+verwendet.
 
-Das gehört jedoch nicht zur Anforderung dieser Aufgabe.
+Ein Heap organisiert Einfügen und Entfernen typischerweise effizienter.
 
-Für diese Übung ist die sortierte Python-Liste eine klare und gut nachvollziehbare Lösung.
-
----
-
-# 16. Eingabevalidierung
-
-Die Aufgabe geht davon aus, dass `priority` sinnvoll übergeben wird, zum Beispiel:
-
-```python
-1
-2
-3
-```
-
-Wir prüfen aktuell nicht:
-
-- ob `priority` wirklich eine Zahl ist,
-- ob sie positiv ist,
-- ob `1` oder größer verwendet wird.
-
-Für die Schulaufgabe ist das vollkommen ausreichend.
-
-In einer produktiveren Klasse müsste man vorher festlegen, welche Werte als gültige Priorität gelten und diese Regel gegebenenfalls validieren.
+Das ist jedoch eine weiterführende Implementierungsentscheidung und nicht notwendig, um die Anforderungen dieser Übung zu erfüllen.
 
 ---
 
-# 17. Speicherkomplexität
+## Tests
 
-Für jedes Element speichern wir zusätzlich:
-
-```text
-priority
-counter
-```
-
-Die Anzahl gespeicherter Tupel wächst mit der Anzahl der Queue-Elemente.
-
-Damit beträgt der Speicherbedarf:
+Der zentrale Lernfall ist:
 
 ```text
-O(n)
+A, Priorität 1
+B, Priorität 3
+C, Priorität 2
+D, Priorität 2
 ```
 
-Der Counter selbst ist nur ein einzelner zusätzlicher Klassenwert.
+mit erwarteter Entnahmereihenfolge:
+
+```text
+A
+C
+D
+B
+```
+
+Die Implementierung wird inzwischen automatisiert mit `pytest` geprüft:
+
+[`../tests/test_queues.py`](../tests/test_queues.py)
+
+Der Test sichert dabei gleichzeitig:
+
+```text
+Prioritätsreihenfolge
++
+FIFO bei gleicher Priorität
+```
+
+ab.
 
 ---
 
-# 18. Zentrale Lernidee
+## Design- und Skalierungsgedanke
 
-Die Lösung kombiniert drei Ideen:
-
-### 1. Priorität
+Die Lösung kombiniert drei verschiedene Entscheidungen:
 
 ```text
-kleinere Zahl = höhere Priorität
+Priorität
+→ bestimmt grundsätzlich die Reihenfolge
+
+Counter
+→ erhält FIFO bei gleicher Priorität
+
+reverse sort
+→ legt das nächste Element ans günstige Listenende
 ```
 
-### 2. Einfügereihenfolge
+Die Performance-Anforderung beeinflusst damit unmittelbar die interne Repräsentation.
 
-```python
-self.counter
-```
+Das ist ein wichtiges Muster:
 
-erhält FIFO bei gleicher Priorität.
-
-### 3. Geeignete Sortierreihenfolge
-
-Das nächste Element liegt absichtlich am Ende der Python-Liste, damit:
-
-```python
-pop()
-```
-
-in:
-
-```text
-O(1)
-```
-
-arbeiten kann.
+> Nicht nur die Daten selbst, sondern auch ihre Anordnung kann gezielt auf die häufigsten oder kritischsten Operationen optimiert werden.
 
 ---
 
-# Zusammenfassung
+## Zentrale Lernidee
 
-Intern speichern wir jedes Element als:
+Die zentrale Erkenntnis lautet:
 
-```python
-(priority, counter, item)
-```
+> **Durch zusätzliche Metadaten und eine bewusst gewählte Sortierreihenfolge können Priorität und FIFO-Verhalten kombiniert werden, während `dequeue()` in O(1) bleibt.**
 
-Der Counter hält die Einfügereihenfolge fest.
+Die Übung zeigt damit sehr anschaulich, dass Datenstruktur-Design nicht nur aus „Speichern und Entfernen“ besteht.
 
-Beim Einfügen wird die Liste so sortiert, dass das als Nächstes benötigte Element am Ende steht:
-
-```python
-self.queue.sort(
-    key=lambda element: (element[0], element[1]),
-    reverse=True,
-)
-```
-
-Beim Entfernen reicht deshalb:
-
-```python
-_, _, item = self.queue.pop()
-```
-
-Die geforderten Laufzeiten werden erfüllt:
+Entscheidend ist auch:
 
 ```text
-enqueue() -> O(n log n)
-dequeue() -> O(1)
+Welche Information speichere ich zusätzlich?
+Wo soll die teure Arbeit stattfinden?
+Welche interne Reihenfolge macht die kritische Operation günstig?
 ```
 
-Die wichtigste Erkenntnis lautet:
+---
 
-> **Durch zusätzliche Metadaten und eine bewusst gewählte Sortierreihenfolge können wir Priorität und FIFO-Verhalten kombinieren und gleichzeitig `dequeue()` in O(1) ermöglichen.**
+## Weiterführend
+
+- [`README.md`](README.md) – Queue, FIFO und Priority-Queue-Grundlagen
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – stabile Priorität und bewusstes Verschieben von Arbeit
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – `O(n log n)` und Operationen vergleichen
+- [`../docs/python_collections_complexity.md`](../docs/python_collections_complexity.md) – Python-Listenoperationen
+- [`../tests/test_queues.py`](../tests/test_queues.py) – automatisierte Tests

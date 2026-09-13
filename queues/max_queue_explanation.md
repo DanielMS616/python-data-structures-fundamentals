@@ -1,4 +1,4 @@
-# `MaxQueue` – Maximum einer Warteschlange in O(1) bestimmen
+# `MaxQueue` – Maximum einer Queue in O(1) bestimmen
 
 ## Ziel der Übung
 
@@ -8,162 +8,137 @@ Die Queue soll neben den normalen FIFO-Operationen eine Methode
 get_max()
 ```
 
-anbieten, die das aktuelle Maximum in **`O(1)`** liefert. Dafür darf zusätzlicher Zustand gepflegt werden, ohne die normale Reihenfolge der Queue zu verändern.
+bereitstellen, die das aktuelle Maximum in:
+
+```text
+O(1)
+```
+
+zurückgibt.
+
+Dafür darf zusätzlicher Zustand gepflegt werden, solange die normale Reihenfolge der Queue unverändert bleibt.
+
+Die allgemeinen Eigenschaften einer Queue und typische Implementierungen sind in [`README.md`](README.md) zusammengefasst.
+
+Hier liegt der Fokus auf der **zusätzlichen Anforderung**, das Maximum jederzeit ohne vollständige Suche verfügbar zu halten.
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Hauptstruktur | `deque` |
+| Hilfsstruktur | monotone `max_queue` |
+| Muster | Zusatzstruktur für schnellen Zugriff |
+| `enqueue()` | amortisiert `O(1)` |
+| `dequeue()` | `O(1)` |
+| `get_max()` | `O(1)` |
+| Zusatzspeicher | `O(n)` |
+| Kernidee | Nur Werte behalten, die noch Maximum werden können |
+
+---
+
+## Relevante Implementierung
 
 ```python
 from collections import deque
 
 
 class MaxQueue:
-    def __init__(self):
-        self.queue = deque()
-        self.max_queue = deque()
+    def __init__(self) -> None:
+        self.queue: deque[int] = deque()
+        self.max_queue: deque[int] = deque()
 
-    def enqueue(self, item):
+    def enqueue(self, item: int) -> None:
         self.queue.append(item)
 
-        # Remove values that can no longer become the maximum.
         while self.max_queue and self.max_queue[-1] < item:
             self.max_queue.pop()
 
         self.max_queue.append(item)
 
-    def dequeue(self):
+    def dequeue(self) -> int | None:
         if not self.queue:
             return None
 
         item = self.queue.popleft()
 
-        # Remove the maximum candidate as well if it leaves the main queue.
         if item == self.max_queue[0]:
             self.max_queue.popleft()
 
         return item
 
-    def get_max(self):
+    def get_max(self) -> int | None:
         if not self.max_queue:
             return None
 
-        # The current maximum is always at the front.
         return self.max_queue[0]
-
-
-# Test
-mq = MaxQueue()
-
-mq.enqueue(3)
-mq.enqueue(1)
-
-print(mq.get_max())  # Expected: 3
 ```
+
+Die vollständige und aktuelle Implementierung befindet sich in [`max_queue.py`](max_queue.py).
 
 ---
 
-# 1. Grundidee
+## Grundidee: zwei synchronisierte Queues
 
-Die Warteschlange verwendet zwei `deque`-Objekte:
-
-```python
-self.queue
-self.max_queue
-```
-
-`queue` enthält alle Elemente in ihrer normalen Reihenfolge.
-
-`max_queue` enthält nur Werte, die noch als aktuelles oder zukünftiges Maximum infrage kommen.
-
-Dadurch muss `get_max()` nicht jedes Mal die gesamte Queue durchsuchen.
-
----
-
-# 2. Warum wäre `max(self.queue)` nicht ausreichend?
-
-Eine naive Lösung wäre:
-
-```python
-def get_max(self):
-    return max(self.queue)
-```
-
-Das liefert zwar das richtige Ergebnis, aber `max()` muss alle Elemente durchsuchen.
-
-Bei `n` Elementen kostet das:
+Die Klasse verwaltet zwei `deque`-Objekte:
 
 ```text
-O(n)
+queue
+→ alle Elemente in normaler FIFO-Reihenfolge
+
+max_queue
+→ nur Werte, die noch als Maximum infrage kommen
 ```
 
-Die Aufgabe verlangt jedoch:
-
-```text
-O(1)
-```
-
-Deshalb pflegen wir eine zusätzliche Hilfsstruktur.
-
----
-
-# 3. Warum verwenden wir `deque`?
-
-Eine Queue arbeitet nach FIFO:
-
-```text
-First In, First Out
-```
-
-Neue Elemente kommen hinten hinein:
-
-```python
-append()
-```
-
-und das älteste Element wird vorne entfernt:
-
-```python
-popleft()
-```
-
-Bei `collections.deque` sind diese Operationen jeweils:
-
-```text
-O(1)
-```
-
-Darum eignet sich `deque` sehr gut für Warteschlangen.
-
----
-
-# 4. Was macht `max_queue`?
-
-`max_queue` wird so gepflegt, dass ihre Werte von vorne nach hinten nicht größer werden.
-
-Das größte relevante Element steht also immer vorne.
-
-Damit ist:
+`max_queue` wird monoton fallend gehalten. Das größte relevante Element steht dadurch immer vorne:
 
 ```python
 self.max_queue[0]
 ```
 
-immer das aktuelle Maximum.
+Damit muss `get_max()` nicht jedes Mal die vollständige Queue durchsuchen.
 
 ---
 
-# 5. Der entscheidende Teil in `enqueue()`
+## Warum `max(self.queue)` nicht ausreicht
+
+Eine einfache Lösung wäre:
+
+```python
+return max(self.queue)
+```
+
+Sie ist funktional korrekt, benötigt aber:
+
+```text
+O(n)
+```
+
+weil alle Elemente betrachtet werden müssen.
+
+Die Aufgabe verlangt:
+
+```text
+O(1)
+```
+
+Deshalb wird die Information über mögliche Maxima bereits beim Einfügen vorbereitet.
+
+---
+
+## Der entscheidende Teil von `enqueue()`
 
 ```python
 while self.max_queue and self.max_queue[-1] < item:
     self.max_queue.pop()
 ```
 
-Angenommen, in `max_queue` stehen:
+Angenommen:
 
 ```text
-[7, 5, 2]
+max_queue = [7, 5, 2]
 ```
 
 und wir fügen ein:
@@ -172,51 +147,27 @@ und wir fügen ein:
 6
 ```
 
-Dann können `5` und `2` später nicht mehr Maximum werden, solange `6` in der Queue vorhanden ist.
+`5` und `2` können danach kein zukünftiges Maximum mehr werden, solange `6` in der Queue vorhanden ist.
 
-Sie werden deshalb entfernt.
-
-Danach:
+Sie werden entfernt:
 
 ```text
 [7]
 ```
 
-und anschließend wird `6` angehängt:
+Danach wird `6` angehängt:
 
 ```text
 [7, 6]
 ```
 
----
-
-# 6. Warum dürfen kleinere Werte entfernt werden?
-
-Angenommen, die normale Queue enthält:
-
-```text
-7, 5, 2
-```
-
-und danach wird:
-
-```text
-6
-```
-
-eingefügt.
-
-Solange `6` noch in der Queue ist, können `5` und `2` niemals Maximum werden.
-
-Wenn `7` irgendwann entfernt wird, ist `6` größer als beide.
-
-Darum müssen `5` und `2` nicht länger als Maximum-Kandidaten gespeichert werden.
+Die Hilfsqueue enthält damit nur noch **relevante Maximum-Kandidaten**.
 
 ---
 
-# 7. Wichtig: Gleich große Werte bleiben erhalten
+## Wichtig: gleiche Maximalwerte bleiben erhalten
 
-Die Bedingung lautet:
+Die Bedingung lautet bewusst:
 
 ```python
 self.max_queue[-1] < item
@@ -228,140 +179,72 @@ und nicht:
 self.max_queue[-1] <= item
 ```
 
-Das ist wichtig bei doppelten Werten.
-
-Beispiel:
+Bei:
 
 ```text
 5, 5
 ```
 
-Beide `5` müssen in `max_queue` erhalten bleiben.
+müssen beide Werte erhalten bleiben.
 
-Wenn die erste `5` später entfernt wird, muss die zweite `5` weiterhin als Maximum vorhanden sein.
+Wird die erste `5` entfernt, muss die zweite weiterhin als Maximum vorhanden sein.
 
-Darum werden nur **kleinere**, nicht gleich große Werte entfernt.
+Dieser kleine Unterschied schützt eine wichtige Invariante der Struktur.
 
 ---
 
-# 8. Wie arbeitet `dequeue()`?
+## `dequeue()` hält beide Strukturen synchron
 
-Die normale Queue entfernt das älteste Element:
+Das älteste Element verlässt zunächst die Hauptqueue:
 
 ```python
 item = self.queue.popleft()
 ```
 
-Danach prüfen wir:
+War dieses Element gleichzeitig der aktuelle Maximum-Kandidat:
 
 ```python
 if item == self.max_queue[0]:
+    self.max_queue.popleft()
 ```
 
-Wenn das entfernte Element gleichzeitig das aktuelle Maximum war, muss es auch aus `max_queue` entfernt werden:
+wird es auch aus der Hilfsqueue entfernt.
 
-```python
-self.max_queue.popleft()
-```
+Die zentrale Invariante lautet:
 
-So bleiben beide Datenstrukturen synchron.
+> `max_queue` darf niemals ein Maximum enthalten, das in `queue` nicht mehr existiert.
 
 ---
 
-# 9. Wie arbeitet `get_max()`?
+## Beispiel
 
-```python
-return self.max_queue[0]
-```
-
-Da das Maximum immer vorne gespeichert wird, ist kein Suchen notwendig.
-
-Die Laufzeit ist:
-
-```text
-O(1)
-```
-
----
-
-# 10. Verwendeter Testfall
-
-Der tatsächliche Testcode lautet:
-
-```python
-mq = MaxQueue()
-
-mq.enqueue(3)
-mq.enqueue(1)
-
-print(mq.get_max())
-```
-
-Die normale Queue enthält danach:
-
-```text
-[3, 1]
-```
-
-Die Hilfsqueue enthält:
-
-```text
-[3, 1]
-```
-
-Das Maximum steht vorne:
-
-```text
-3
-```
-
-Ausgabe:
-
-```text
-3
-```
-
----
-
-# 11. Zusätzliches Erklärbeispiel
-
-Das folgende Beispiel gehört **nicht zum obigen Testcode**. Es dient nur dazu, die Logik von `max_queue` besser zu verstehen.
-
-Wir fügen nacheinander ein:
+Wir fügen ein:
 
 ```text
 3, 1, 5, 2
 ```
 
-Nach `3`:
+Entwicklung:
 
 ```text
+nach 3:
 queue:      [3]
 max_queue:  [3]
-```
 
-Nach `1`:
-
-```text
+nach 1:
 queue:      [3, 1]
 max_queue:  [3, 1]
-```
 
-Nach `5` werden `1` und `3` aus `max_queue` entfernt, weil beide kleiner als `5` sind:
-
-```text
+nach 5:
 queue:      [3, 1, 5]
 max_queue:  [5]
-```
 
-Nach `2`:
-
-```text
+nach 2:
 queue:      [3, 1, 5, 2]
 max_queue:  [5, 2]
 ```
 
-Das aktuelle Maximum ist weiterhin:
+Das Maximum ist direkt:
 
 ```text
 5
@@ -369,9 +252,9 @@ Das aktuelle Maximum ist weiterhin:
 
 ---
 
-# 12. Laufzeitkomplexität
+## Komplexität
 
-## `get_max()`
+### `get_max()`
 
 ```python
 self.max_queue[0]
@@ -383,74 +266,50 @@ Direkter Zugriff:
 O(1)
 ```
 
-## `dequeue()`
+### `dequeue()`
 
-`popleft()` auf einer `deque`:
-
-```text
-O(1)
-```
-
-Auch die mögliche Entfernung aus `max_queue` ist:
+`popleft()` auf einer `deque` ist:
 
 ```text
 O(1)
 ```
 
-Also insgesamt:
+Auch die optionale Entfernung aus `max_queue` bleibt:
+
+```text
+O(1)
+```
+
+Damit:
 
 ```text
 dequeue() -> O(1)
 ```
 
-## `enqueue()`
+### `enqueue()`
 
-Auf den ersten Blick enthält `enqueue()` eine `while`-Schleife.
+Ein einzelner Aufruf kann mehrere Werte aus `max_queue` entfernen.
 
-Ein einzelner Aufruf kann mehrere Elemente aus `max_queue` entfernen.
-
-Über viele Operationen betrachtet kann jedes Element aber nur:
-
-1. einmal eingefügt,
-2. und höchstens einmal wieder entfernt werden.
-
-Darum ist `enqueue()` **amortisiert O(1)**.
-
----
-
-# 13. Was bedeutet „amortisiert O(1)“?
-
-Ein einzelner `enqueue()`-Aufruf kann manchmal mehr Arbeit machen.
-
-Beispiel:
+Über eine ganze Folge von Einfügungen kann jedoch jedes Element:
 
 ```text
-1, 2, 3, 4, 100
+einmal eingefügt
+und höchstens einmal entfernt
 ```
 
-Beim Einfügen von `100` können mehrere kleinere Kandidaten entfernt werden.
+werden.
 
-Diese zusätzlichen Entfernungen können aber nicht beliebig oft wiederholt werden, weil jedes Element danach endgültig aus `max_queue` verschwunden ist.
-
-Über viele Einfügungen verteilt bleibt der durchschnittliche Aufwand deshalb konstant.
-
-Das nennt man:
+Deshalb gilt:
 
 ```text
-amortisiert O(1)
+enqueue() -> amortisiert O(1)
 ```
 
----
+Das ist ein klassisches Beispiel dafür, dass eine `while`-Schleife nicht automatisch eine lineare Laufzeit **pro Operation** bedeutet.
 
-# 14. Speicherkomplexität
+### Zusatzspeicher
 
-Neben der normalen Queue speichern wir eine zweite Struktur:
-
-```python
-max_queue
-```
-
-Im Worst Case, zum Beispiel bei streng fallenden Werten:
+Im Worst Case, etwa bei:
 
 ```text
 9, 8, 7, 6, 5
@@ -466,41 +325,97 @@ O(n)
 
 ---
 
-# 15. Fehlerfälle
+## Rand- und Fehlerfälle
 
-Bei einer leeren Queue behandeln wir zwei Fälle:
+### Leere Queue
+
+Sowohl:
 
 ```python
 dequeue()
 ```
 
-und:
+als auch:
 
 ```python
 get_max()
 ```
 
-Beide geben:
+geben bei einer leeren Queue:
 
 ```python
 None
 ```
 
-zurück, wenn keine Elemente vorhanden sind.
+zurück.
 
-Für diese Schulaufgabe ist das eine einfache und verständliche Lösung.
+Das ist Teil der aktuellen Schnittstellenentscheidung.
 
-In einer größeren Anwendung könnte man alternativ bewusst eine Exception verwenden.
+### Doppelte Maximalwerte
+
+```text
+5, 5, 3
+```
+
+ist ein besonders wichtiger Fall.
+
+Nach dem Entfernen der ersten `5` muss die zweite `5` weiterhin als Maximum verfügbar sein.
+
+Genau dieser Fall wird heute automatisiert getestet.
 
 ---
 
-# 16. Design- und Skalierungsgedanke
+## Typvertrag
 
-Diese Aufgabe zeigt einen klassischen Trade-off:
+Die aktuelle Schnittstelle lautet:
+
+```python
+enqueue(self, item: int) -> None
+dequeue(self) -> int | None
+get_max(self) -> int | None
+```
+
+Damit ist sichtbar:
+
+```text
+gespeicherte Werte -> int
+leere Queue        -> None bei dequeue/get_max
+```
+
+Eine generische Variante für beliebige vergleichbare Typen wäre möglich, gehört aber nicht zum Umfang dieser Lernübung.
+
+---
+
+## Tests
+
+Der ursprüngliche Lernfall prüft:
+
+```python
+mq.enqueue(3)
+mq.enqueue(1)
+```
+
+mit erwartetem Ergebnis:
+
+```text
+get_max() -> 3
+```
+
+Die Implementierung wird inzwischen zusätzlich automatisiert mit `pytest` geprüft:
+
+[`../tests/test_queues.py`](../tests/test_queues.py)
+
+Besonders relevant ist der Test mit **doppelten Maximalwerten**, weil er die Entscheidung für `<` statt `<=` direkt absichert.
+
+---
+
+## Design- und Skalierungsgedanke
+
+Die Übung zeigt einen klassischen Trade-off:
 
 ```text
 mehr Speicher
-gegen
+↔
 schnellere Abfrage
 ```
 
@@ -516,64 +431,45 @@ Mit `max_queue`:
 get_max() -> O(1)
 ```
 
-Dafür benötigen wir zusätzliche Daten im Speicher.
+Dafür muss zusätzlicher Zustand gepflegt und konsistent gehalten werden.
 
-Das gleiche Grundprinzip begegnet später zum Beispiel bei:
+Dieses Muster begegnet später auch bei:
 
-- Datenbankindizes
-- Caches
-- vorberechneten Werten
-- Lookup-Strukturen
+```text
+Caches
+Datenbankindizes
+Lookup-Strukturen
+vorberechneten Werten
+```
+
+Die Optimierung besteht also nicht darin, weniger Information zu speichern, sondern **gezielt mehr Information vorzuhalten**, damit spätere Operationen billiger werden.
 
 ---
 
-# 17. Datenintegrität
+## Zentrale Lernidee
 
-Die wichtigste interne Regel lautet:
-
-> `max_queue` muss immer zum Zustand von `queue` passen.
-
-Darum reicht es nicht, nur beim Einfügen Änderungen vorzunehmen.
-
-Auch beim Entfernen müssen wir prüfen:
-
-```python
-if item == self.max_queue[0]:
-    self.max_queue.popleft()
-```
-
-Würde man diesen Schritt vergessen, könnte `get_max()` später einen Wert zurückgeben, der gar nicht mehr in der eigentlichen Queue vorhanden ist.
-
-Das wäre ein Datenkonsistenzfehler.
-
----
-
-# Zusammenfassung
-
-Die Klasse verwendet zwei Warteschlangen:
-
-```text
-queue      -> enthält alle Elemente
-max_queue  -> enthält nur mögliche Maximum-Kandidaten
-```
-
-Beim Einfügen werden kleinere Kandidaten entfernt:
-
-```python
-while self.max_queue and self.max_queue[-1] < item:
-    self.max_queue.pop()
-```
-
-Beim Entfernen werden beide Strukturen synchron gehalten.
-
-Dadurch erhalten wir:
-
-```text
-enqueue()  -> amortisiert O(1)
-dequeue()  -> O(1)
-get_max()  -> O(1)
-```
-
-Die wichtigste Erkenntnis lautet:
+Die zentrale Erkenntnis lautet:
 
 > **Durch eine zusätzliche monotone Hilfsqueue kann das aktuelle Maximum jederzeit direkt in O(1) gelesen werden.**
+
+Die Lösung kombiniert drei wichtige Ideen:
+
+```text
+monotone Kandidatenstruktur
++
+Synchronisation mit der Hauptqueue
++
+amortisierte Analyse
+```
+
+Dadurch entsteht eine schnelle Maximum-Abfrage, ohne die FIFO-Reihenfolge der eigentlichen Queue zu verändern.
+
+---
+
+## Weiterführend
+
+- [`README.md`](README.md) – Queue, FIFO und Implementierungsvarianten
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – monotone Hilfsqueue und Speicher-Laufzeit-Trade-offs
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – amortisierte Laufzeit
+- [`../docs/python_collections_complexity.md`](../docs/python_collections_complexity.md) – `deque` und typische Python-Operationen
+- [`../tests/test_queues.py`](../tests/test_queues.py) – automatisierte Tests
