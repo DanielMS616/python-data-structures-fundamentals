@@ -74,6 +74,9 @@ if opening_symbol:
     stack.push(symbol)
 
 elif closing_symbol:
+    if stack.is_empty():
+        return False
+
     opening = stack.pop()
 
     if not matches(opening, symbol):
@@ -190,6 +193,10 @@ Durchschnittlich:
 Membership-Test -> O(1)
 ```
 
+### Voraussetzung
+
+Bei einem Python-`set` müssen die gespeicherten Werte **hashbar** sein. Diese Voraussetzung sollte bei Set-basierten Lösungen Teil des Datenmodells bzw. Typvertrags sein.
+
 ### Im Repository
 
 - `linked_lists/linked_list_remove_duplicates.py`
@@ -220,9 +227,13 @@ head                         tail
 
 ### Muster
 
+Beim ersten Node müssen `head` und `tail` gemeinsam gesetzt werden:
+
 ```python
-self.tail.next = new_node
-self.tail = new_node
+if self.head is None:
+    self.head = new_node
+    self.tail = new_node
+    return
 ```
 
 ### Nutzen
@@ -256,9 +267,9 @@ Eine Queue soll das aktuelle Maximum oder Minimum sehr schnell liefern.
 
 ### Idee
 
-Neben der normalen Queue wird eine zweite Struktur gepflegt, die nur noch relevante Kandidaten enthält.
+Neben der normalen Queue wird eine zweite Struktur gepflegt, die nur noch Werte enthält, die als aktuelles oder zukünftiges Maximum infrage kommen.
 
-Für ein Maximum:
+Beim Einfügen werden kleinere Kandidaten am Ende entfernt:
 
 ```python
 while max_queue and max_queue[-1] < item:
@@ -267,10 +278,51 @@ while max_queue and max_queue[-1] < item:
 max_queue.append(item)
 ```
 
-Das Maximum liegt danach direkt vorne:
+Wichtig ist hier:
+
+```text
+<
+```
+
+statt:
+
+```text
+<=
+```
+
+Gleich große Werte müssen erhalten bleiben, damit zum Beispiel bei:
+
+```text
+5, 5
+```
+
+nach dem Entfernen der ersten `5` die zweite weiterhin als Maximum verfügbar ist.
+
+Das Maximum liegt direkt vorne:
 
 ```python
 max_queue[0]
+```
+
+Beim Entfernen aus der eigentlichen Queue müssen beide Strukturen synchron bleiben:
+
+```python
+item = queue.popleft()
+
+if item == max_queue[0]:
+    max_queue.popleft()
+```
+
+Die zentrale Invariante lautet:
+
+> `max_queue` enthält nur noch relevante Maximum-Kandidaten und darf keinen Wert als aktuelles Maximum führen, der die eigentliche Queue bereits verlassen hat.
+
+Dadurch gilt:
+
+```text
+get_max() -> O(1)
+dequeue() -> O(1)
+enqueue() -> amortisiert O(1)
 ```
 
 ### Im Repository

@@ -23,6 +23,29 @@ The goal is not simply to collect working solutions. Each topic is documented wi
 
 ---
 
+## Quality and Tooling
+
+This repository uses a deliberately small engineering toolchain to keep the examples reliable without hiding the underlying data-structure concepts behind excessive tooling.
+
+- **pytest** provides automated behavioral tests for the exercises.
+- **Ruff** checks code quality, common errors, and import consistency.
+- **Type hints** make interfaces and important state assumptions explicit.
+- **GitHub Actions** runs linting and tests automatically on pushes and pull requests.
+
+The local quality gate is:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+ruff check .
+python -m pytest -q
+```
+
+The CI workflow runs the same linting and test checks in a clean environment using **Python 3.14**.
+
+This keeps the repository locally reproducible while making the current quality status visible through the CI badge above.
+
+---
+
 ## Learning Structure
 
 The repository is organized around three complementary layers:
@@ -58,10 +81,9 @@ More: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 
 ```text
 .
-├── .gitignore
-├── LICENSE
-├── README.md
-├── requirements.txt
+├── .github
+│   └── workflows
+│       └── ci.yml
 ├── docs
 │   ├── README.md
 │   ├── adt_and_implementation.md
@@ -70,7 +92,7 @@ More: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 │   ├── glossary.md
 │   ├── learning_workflow.md
 │   └── python_collections_complexity.md
-├── LinkedLists
+├── linked_lists
 │   ├── README.md
 │   ├── linked_list_append_o1.py
 │   ├── linked_list_append_o1_explanation.md
@@ -80,7 +102,7 @@ More: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 │   ├── linked_list_remove_duplicates_explanation.md
 │   ├── linked_list_reverse.py
 │   └── linked_list_reverse_explanation.md
-├── queue
+├── queues
 │   ├── README.md
 │   ├── max_queue.py
 │   ├── max_queue_explanation.md
@@ -88,14 +110,24 @@ More: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 │   ├── priority_queue_explanation.md
 │   ├── reversable_queue.py
 │   └── reversable_queue_explanation.md
-└── Stack
-    ├── README.md
-    ├── balanced_symbols.py
-    ├── balanced_symbols_explanation.md
-    ├── par_checker.py
-    ├── par_checker_explanation.md
-    ├── rev_string.py
-    └── rev_string_explanation.md
+├── stacks
+│   ├── README.md
+│   ├── balanced_symbols.py
+│   ├── balanced_symbols_explanation.md
+│   ├── par_checker.py
+│   ├── par_checker_explanation.md
+│   ├── rev_string.py
+│   └── rev_string_explanation.md
+├── tests
+│   ├── test_linked_lists.py
+│   ├── test_queues.py
+│   └── test_stacks.py
+├── .gitignore
+├── LICENSE
+├── pyproject.toml
+├── README.md
+├── requirements-dev.txt
+└── requirements.txt
 ```
 
 ---
@@ -126,25 +158,48 @@ Self-explanatory code is not commented unnecessarily.
 
 ### 2. Exercise Explanations
 
-Each exercise is accompanied by a detailed Markdown file:
+Each exercise is accompanied by a dedicated Markdown file:
 
 ```text
 exercise.py
 exercise_explanation.md
 ```
 
-These files typically include:
+The explanation focuses on the **algorithm-specific reasoning** rather than duplicating the complete source file.
+
+Depending on the exercise, it typically contains:
 
 - a paraphrased exercise goal,
-- the final implementation,
-- a step-by-step explanation,
-- text-based visualizations,
+- a compact quick summary,
+- the relevant implementation excerpts,
+- a step-by-step explanation of the algorithm,
+- the key invariant or reason why the solution works,
 - time and space complexity,
-- edge and error cases,
+- relevant edge and error cases,
+- the type contract where useful,
 - design and scaling considerations,
-- additional examples.
+- links to the automated tests and shared documentation.
 
-Additional examples are explicitly separated from the original test scenario.
+The corresponding `.py` file remains the **single source of truth for the current implementation**.
+
+This separation keeps the documentation useful without requiring complete code copies to be maintained in multiple places:
+
+```text
+*.py
+    → current reference implementation
+
+*_explanation.md
+    → exercise-specific reasoning and analysis
+
+topic README.md
+    → shared conceptual foundations
+
+tests/
+    → executable verification
+
+docs/
+    → cross-cutting concepts and reusable patterns
+```
 
 ---
 
@@ -335,15 +390,28 @@ For larger software projects, this same mindset extends naturally to topics such
 
 ## Setup
 
-Some stack exercises use the `pythonds3` package. The version used by this repository is recorded in [`requirements.txt`](requirements.txt).
+The repository is developed and CI-tested with **Python 3.14**.
 
-Install the dependencies with:
+The exercise implementations require the runtime dependencies recorded in [`requirements.txt`](requirements.txt):
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-Typical import:
+For development and full local verification, install:
+
+```bash
+python3 -m pip install -r requirements-dev.txt
+```
+
+Then run the same quality checks used by CI:
+
+```bash
+ruff check .
+python -m pytest -q
+```
+
+Some stack-based exercises use `pythonds3`:
 
 ```python
 from pythonds3.basic import Stack
