@@ -8,7 +8,11 @@ Die Methode
 find_middle()
 ```
 
-soll den Wert des mittleren Nodes bestimmen, **ohne vorher die Listenlänge zu berechnen**. Dafür werden zwei unterschiedlich schnelle Referenzen verwendet. Bei einer geraden Anzahl von Nodes gilt der zweite der beiden mittleren Nodes als Ergebnis.
+soll den Wert des mittleren Nodes bestimmen, **ohne vorher die Listenlänge zu berechnen**.
+
+Dafür werden zwei Referenzen verwendet, die sich unterschiedlich schnell durch die Liste bewegen.
+
+Bei einer geraden Anzahl von Nodes soll der **zweite** der beiden mittleren Nodes zurückgegeben werden.
 
 Beispiele:
 
@@ -24,7 +28,7 @@ Ergebnis:
 6
 ```
 
-Bei einer geraden Anzahl:
+und:
 
 ```text
 5 -> 6 -> 7 -> 8
@@ -38,132 +42,102 @@ Ergebnis:
 7
 ```
 
+Die allgemeinen Linked-List-Grundlagen stehen in [`README.md`](README.md).
+
+Hier liegt der Fokus auf dem **Slow/Fast-Pointer-Muster**.
+
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Muster | Slow / Fast Pointer |
+| `slow` | 1 Node pro Runde |
+| `fast` | 2 Nodes pro Runde |
+| Laufzeit | `O(n)` |
+| Zusatzspeicher | `O(1)` |
+| gerade Node-Anzahl | zweiter mittlerer Node |
+| Kernidee | Wenn `fast` das Ende erreicht, steht `slow` in der Mitte |
+
+---
+
+## Relevante Implementierung
 
 ```python
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-
-
 class LinkedList:
-    def __init__(self):
-        self.head = None
+    def __init__(self) -> None:
+        self.head: Node | None = None
 
-    def find_middle(self):
+    def find_middle(self) -> object | None:
         slow = self.head
         fast = self.head
 
-        # slow moves one node, fast moves two nodes per iteration.
         while fast and fast.next:
             slow = slow.next
             fast = fast.next.next
 
-        # When fast reaches the end, slow is at the middle.
         return slow.data if slow else None
-
-    def append(self, data):
-        new_node = Node(data)
-
-        if not self.head:
-            self.head = new_node
-            return
-
-        last_node = self.head
-
-        while last_node.next:
-            last_node = last_node.next
-
-        last_node.next = new_node
-
-    def __str__(self):
-        elements = []
-        current = self.head
-
-        while current:
-            elements.append(current.data)
-            current = current.next
-
-        return "->".join(map(str, elements))
-
-
-# Test
-ll = LinkedList()
-
-ll.append(5)
-ll.append(6)
-
-print(ll.find_middle())  # Expected: 6
-
-ll.append(7)
-
-print(ll.find_middle())  # Expected: 6
 ```
+
+Die vollständige und aktuelle Implementierung befindet sich in [`linked_list_find_middle.py`](linked_list_find_middle.py).
 
 ---
 
-# 1. Grundidee: Zwei Zeiger mit unterschiedlicher Geschwindigkeit
+## Grundidee: zwei unterschiedlich schnelle Referenzen
 
-Die zentrale Idee dieser Aufgabe ist das sogenannte:
-
-```text
-slow-and-fast-pointer principle
-```
-
-Wir verwenden zwei Referenzen:
+Beide starten bei:
 
 ```python
-slow = self.head
-fast = self.head
+self.head
 ```
 
-Beide starten am ersten Knoten.
-
-Aber sie bewegen sich unterschiedlich schnell:
+Dann gilt pro Schleifenrunde:
 
 ```text
-slow -> 1 Knoten pro Schleifenrunde
-fast -> 2 Knoten pro Schleifenrunde
+slow -> 1 Schritt
+fast -> 2 Schritte
 ```
 
-Wenn `fast` das Ende der Liste erreicht, hat `slow` ungefähr nur die halbe Strecke zurückgelegt.
+Wenn `fast` das Ende erreicht, hat `slow` ungefähr halb so viele Nodes durchlaufen.
 
-Damit befindet sich `slow` genau in der Mitte.
+Damit befindet sich `slow` in der Mitte.
+
+Das Muster wird häufig als:
+
+```text
+Slow / Fast Pointer
+```
+
+oder:
+
+```text
+Tortoise and Hare
+```
+
+bezeichnet.
 
 ---
 
-# 2. Warum funktioniert das mathematisch?
+## Warum das mathematisch funktioniert
 
-Angenommen, die Liste hat `n` Knoten.
+Angenommen, die Liste enthält `n` Nodes.
 
-Wenn `fast` pro Schleifenrunde zwei Schritte macht, benötigt es ungefähr:
+`fast` bewegt sich mit doppelter Geschwindigkeit und benötigt ungefähr:
 
 ```text
 n / 2
 ```
 
-Schleifenrunden, um das Ende zu erreichen.
+Schleifenrunden bis zum Ende.
 
-In denselben Schleifenrunden bewegt sich `slow` immer nur einen Schritt.
+In denselben Runden legt `slow` genau einen Schritt zurück.
 
-Also legt `slow` ungefähr:
-
-```text
-n / 2
-```
-
-Knoten zurück.
-
-Genau dort liegt die Mitte.
+Nach ungefähr `n / 2` Schritten steht `slow` deshalb in der Mitte.
 
 ---
 
-# 3. Beispiel mit ungerader Anzahl
-
-Nehmen wir:
+## Beispiel mit ungerader Anzahl
 
 ```text
 5 -> 6 -> 7 -> 8 -> 9
@@ -176,37 +150,33 @@ slow -> 5
 fast -> 5
 ```
 
-Nach der ersten Schleifenrunde:
+Nach Runde 1:
 
 ```text
 slow -> 6
 fast -> 7
 ```
 
-Nach der zweiten:
+Nach Runde 2:
 
 ```text
 slow -> 7
 fast -> 9
 ```
 
-Danach kann `fast` nicht mehr zwei Schritte weitergehen.
+`fast.next` ist nun `None`.
 
-Die Schleife endet.
-
-`slow` zeigt auf:
+Die Schleife endet und:
 
 ```text
-7
+slow -> 7
 ```
 
-Das ist die Mitte.
+liefert die Mitte.
 
 ---
 
-# 4. Beispiel mit gerader Anzahl
-
-Nehmen wir:
+## Beispiel mit gerader Anzahl
 
 ```text
 5 -> 6 -> 7 -> 8
@@ -219,293 +189,103 @@ slow -> 5
 fast -> 5
 ```
 
-Nach der ersten Runde:
+Nach Runde 1:
 
 ```text
 slow -> 6
 fast -> 7
 ```
 
-Nach der zweiten Runde:
+Nach Runde 2:
 
 ```text
 slow -> 7
 fast -> None
 ```
 
-Die Schleife endet.
-
-`slow` zeigt auf:
+Damit ist das Ergebnis:
 
 ```text
 7
 ```
 
-Bei vier Elementen wären die beiden mittleren Werte:
+Bei vier Nodes sind:
 
 ```text
 6 und 7
 ```
 
-Die Aufgabe verlangt ausdrücklich den **zweiten mittleren Knoten**.
+die beiden mittleren Werte.
 
-Genau diesen liefert die gewählte Schleifenlogik automatisch.
+Die gewählte Schleifenlogik liefert automatisch den **zweiten** davon.
 
 ---
 
-# 5. Warum lautet die Schleifenbedingung so?
+## Warum die Schleifenbedingung wichtig ist
 
 ```python
 while fast and fast.next:
 ```
 
-Wir prüfen zwei Dinge:
+`fast` bewegt sich mit:
 
 ```python
+fast = fast.next.next
+```
+
+zwei Schritte weiter.
+
+Dafür müssen sowohl:
+
+```text
 fast
 ```
 
-und:
+als auch:
 
-```python
+```text
 fast.next
 ```
 
-Der Grund ist diese Zeile:
-
-```python
-fast = fast.next.next
-```
-
-`fast` springt immer zwei Knoten weiter.
-
-Dafür muss sowohl:
-
-- der aktuelle `fast`-Knoten existieren,
-- als auch sein nächster Knoten.
-
 existieren.
 
-Wenn einer davon fehlt, können wir nicht sicher zwei Schritte weitergehen.
-
-Die Bedingung schützt uns deshalb vor einem Fehler wie:
+Die Bedingung schützt damit vor dem Zugriff auf:
 
 ```text
-AttributeError: 'NoneType' object has no attribute 'next'
+None.next
 ```
+
+und ist gleichzeitig dafür verantwortlich, wie gerade Listen behandelt werden.
 
 ---
 
-# 6. Was passiert bei zwei Knoten?
+## Warum die Länge nicht vorher berechnet wird
 
-Liste:
-
-```text
-5 -> 6
-```
-
-Start:
+Eine andere Lösung könnte:
 
 ```text
-slow -> 5
-fast -> 5
+1. alle Nodes zählen
+2. Mitte berechnen
+3. erneut vom Head zur Mitte laufen
 ```
 
-Die Schleifenbedingung ist wahr:
-
-```text
-fast exists
-fast.next exists
-```
-
-Dann:
-
-```python
-slow = slow.next
-```
-
-macht:
-
-```text
-slow -> 6
-```
-
-und:
-
-```python
-fast = fast.next.next
-```
-
-macht:
-
-```text
-fast -> None
-```
-
-Die Schleife endet.
-
-Ergebnis:
-
-```text
-6
-```
-
-Das ist genau der **zweite mittlere Knoten**.
-
----
-
-# 7. Was passiert bei drei Knoten?
-
-Liste:
-
-```text
-5 -> 6 -> 7
-```
-
-Start:
-
-```text
-slow -> 5
-fast -> 5
-```
-
-Nach einer Runde:
-
-```text
-slow -> 6
-fast -> 7
-```
-
-Jetzt ist:
-
-```text
-fast.next = None
-```
-
-also endet die Schleife.
-
-Ergebnis:
-
-```text
-6
-```
-
-Das ist die echte Mitte.
-
----
-
-# 8. Randfall: Leere Liste
-
-Bei einer leeren Liste:
-
-```python
-self.head = None
-```
-
-setzen wir:
-
-```python
-slow = None
-fast = None
-```
-
-Die Schleife läuft nicht.
-
-Am Ende:
-
-```python
-return slow.data if slow else None
-```
-
-Da `slow` `None` ist, wird zurückgegeben:
-
-```text
-None
-```
-
-Damit ist der leere Fall sauber behandelt.
-
----
-
-# 9. Randfall: Nur ein Knoten
-
-Liste:
-
-```text
-5
-```
-
-Dann:
-
-```text
-slow -> 5
-fast -> 5
-```
-
-Aber:
-
-```text
-fast.next = None
-```
-
-Die Schleife läuft nicht.
-
-`slow` zeigt weiterhin auf `5`.
-
-Ergebnis:
-
-```text
-5
-```
-
-Auch dafür brauchen wir keine Sonderbehandlung.
-
----
-
-# 10. Warum bestimmen wir nicht zuerst die Länge?
-
-Eine naheliegende Lösung wäre:
-
-1. durch die gesamte Liste laufen und die Knoten zählen,
-2. die Mitte berechnen,
-3. nochmals vom Head bis zur Mitte laufen.
-
-Zum Beispiel:
-
-```text
-Länge bestimmen -> O(n)
-zur Mitte laufen -> O(n)
-```
-
-In Big-O wäre das zwar ebenfalls:
+Das wäre asymptotisch ebenfalls:
 
 ```text
 O(n)
 ```
 
-aber wir würden die Liste zweimal durchlaufen.
+würde die Liste aber zweimal traversieren.
 
-Die Aufgabe verlangt ausdrücklich eine Lösung ohne vorherige Längenbestimmung.
-
-Der Slow/Fast-Ansatz benötigt nur einen Durchlauf.
+Der Slow/Fast-Ansatz erreicht das Ziel in einem einzigen Traversal und benötigt keine separate Längeninformation.
 
 ---
 
-# 11. Laufzeitkomplexität
+## Komplexität
 
-Der `fast`-Zeiger bewegt sich doppelt so schnell wie `slow`.
+### Laufzeit
 
-Trotzdem bleibt die Laufzeit:
-
-```text
-O(n)
-```
-
-Warum?
-
-Weil die Anzahl der Schleifenrunden proportional zur Anzahl der Knoten wächst.
-
-Genauer läuft die Schleife ungefähr:
+Die Schleife läuft ungefähr:
 
 ```text
 n / 2
@@ -513,113 +293,118 @@ n / 2
 
 Mal.
 
-Bei Big-O werden konstante Faktoren ignoriert:
+In Big O werden konstante Faktoren ignoriert:
 
 ```text
-O(n / 2) -> O(n)
+O(n / 2) = O(n)
 ```
 
----
+Damit:
 
-# 12. Speicherkomplexität
+```text
+find_middle() -> O(n)
+```
 
-Wir verwenden nur zwei zusätzliche Referenzen:
+### Zusatzspeicher
+
+Es werden nur zwei zusätzliche Referenzen benötigt:
 
 ```python
 slow
 fast
 ```
 
-Es wird:
-
-- keine zusätzliche Liste,
-- kein Set,
-- kein Stack,
-- keine Kopie der Linked List
-
-erstellt.
-
-Der zusätzliche Speicherbedarf beträgt deshalb:
+Die Anzahl dieser Referenzen hängt nicht von `n` ab:
 
 ```text
 O(1)
 ```
 
-Das ist ein großer Vorteil dieser Lösung.
-
 ---
 
-# 13. Warum ist das besser als Werte zu speichern?
+## Randfälle
 
-Eine andere Möglichkeit wäre, alle Werte zuerst in einer Python-Liste zu speichern:
+### Leere Liste
+
+```text
+head = None
+```
+
+Dann sind:
+
+```text
+slow = None
+fast = None
+```
+
+Die Schleife läuft nicht.
+
+Durch:
 
 ```python
-values = []
+return slow.data if slow else None
 ```
 
-und danach den mittleren Index zu wählen.
-
-Das würde funktionieren, hätte aber zusätzlichen Speicherbedarf:
+wird:
 
 ```text
-O(n)
+None
 ```
 
-Die Slow/Fast-Lösung braucht dagegen:
-
-```text
-O(1)
-```
-
-zusätzlichen Speicher.
+zurückgegeben.
 
 ---
 
-# 14. Wichtiger Designgedanke: Zeiger statt Zusatzdaten
+### Ein Node
 
-Diese Aufgabe zeigt einen wichtigen allgemeinen Algorithmus-Gedanken:
+```text
+[5] -> None
+```
 
-> Manchmal kann man Informationen über die Position in einer Struktur gewinnen, ohne zusätzliche Daten zu speichern.
+`fast.next` existiert nicht.
 
-Durch zwei unterschiedlich schnelle Zeiger erhalten wir indirekt die Mitte der Liste.
+Die Schleife läuft nicht und `slow` bleibt auf `5`.
 
-Dieses Muster wird häufig eingesetzt.
+Ergebnis:
+
+```text
+5
+```
 
 ---
 
-# 15. Weitere Anwendungen von Slow/Fast Pointers
-
-Das gleiche Prinzip kann unter anderem verwendet werden für:
-
-- Mitte einer Linked List finden,
-- Zyklen in Linked Lists erkennen,
-- Startpunkt eines Zyklus finden,
-- bestimmte Abstände zwischen Knoten untersuchen.
-
-Das Verfahren wird oft auch als:
+### Zwei Nodes
 
 ```text
-Tortoise and Hare
+5 -> 6
 ```
 
-bezeichnet:
+Nach einer Runde:
 
 ```text
-Tortoise = slow
-Hare     = fast
+slow -> 6
+fast -> None
 ```
 
-also Schildkröte und Hase.
+Ergebnis:
+
+```text
+6
+```
+
+Damit wird wie gefordert die zweite Mitte gewählt.
 
 ---
 
-# 16. Fehlerfälle und Robustheit
+## Versteckte Annahme: keine Zyklen
 
-Für eine normale, korrekt aufgebaute einfach verkettete Liste funktioniert die Methode sauber.
+Die Methode setzt eine normale, endende Linked List voraus:
 
-Ein interessanter Sonderfall wäre jedoch eine **zirkuläre Linked List**.
+```text
+... -> None
+```
 
-Zum Beispiel:
+Bei einer zyklischen Struktur:
 
 ```text
 5 -> 6 -> 7
@@ -627,148 +412,152 @@ Zum Beispiel:
      └────┘
 ```
 
-Dann gibt es kein echtes Ende mit:
+existiert kein normales Listenende.
 
-```text
-None
-```
+Die Schleife könnte dann dauerhaft weiterlaufen.
 
-Die Schleife:
+Für diese Lernübung ist eine azyklische Linked List vorausgesetzt.
 
-```python
-while fast and fast.next:
-```
-
-könnte deshalb endlos weiterlaufen.
-
-Für diese Schulaufgabe ist das kein Problem, weil eine normale nicht-zirkuläre Linked List vorausgesetzt wird.
-
-In einer allgemeineren Datenstruktur müsste man jedoch entscheiden, ob Zyklen:
-
-- ausgeschlossen,
-- validiert,
-- oder bewusst unterstützt
-
-werden sollen.
-
-Das ist ein gutes Beispiel für eine versteckte Annahme einer Funktion.
+Das ist ein gutes Beispiel dafür, dass Algorithmen oft **strukturelle Vorbedingungen** besitzen, auch wenn diese nicht als Funktionsparameter sichtbar sind.
 
 ---
 
-# 17. Zusammenhang mit Datenintegrität
+## Die Methode verändert die Liste nicht
 
-Die Methode verändert die Liste selbst nicht.
-
-Sie liest nur:
+`find_middle()` liest nur:
 
 ```python
 next
 ```
 
-und verschiebt lokale Referenzen.
+und verändert lediglich lokale Referenzen.
 
-Das bedeutet:
+Es werden:
 
-- keine Knoten werden gelöscht,
-- keine `next`-Referenz wird verändert,
-- `head` bleibt unverändert.
+```text
+keine Nodes gelöscht
+keine next-Links geändert
+head nicht verändert
+```
 
-Das Risiko, die Datenstruktur versehentlich zu beschädigen, ist deshalb deutlich geringer als bei `reverse()` oder `remove_duplicates()`.
+Damit ist das Risiko struktureller Beschädigungen deutlich geringer als bei Methoden wie `reverse()` oder `remove_duplicates()`.
 
 ---
 
-# 18. Hinweis zu `append()`
+## Hinweis zu `append()`
 
-Die `append()`-Methode dieser Aufgabe sucht weiterhin jedes Mal das Listenende:
+Die `append()`-Methode in dieser eigenständigen Übungsdatei sucht das Listenende weiterhin:
 
 ```python
 while last_node.next:
     last_node = last_node.next
 ```
 
-Damit ist:
+Damit gilt dort:
 
 ```text
 append() -> O(n)
 ```
 
-Das gehört nicht zum Lernziel dieser Aufgabe.
+Das ist bewusst nicht das Lernziel dieser Datei.
 
-Aus einer vorherigen Übung wissen wir bereits, dass ein zusätzlicher:
-
-```python
-self.tail
-```
-
-das Anhängen auf:
-
-```text
-O(1)
-```
-
-verbessern kann.
+Die separate Übung [`linked_list_append_o1_explanation.md`](linked_list_append_o1_explanation.md) zeigt, wie ein `tail`-Pointer `append()` auf `O(1)` verbessert.
 
 ---
 
-# 19. Zentrale Lernidee
+## Typvertrag
 
-Der entscheidende Code lautet:
+Die aktuelle Schnittstelle lautet:
 
 ```python
-slow = self.head
-fast = self.head
-
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
+find_middle(self) -> object | None
 ```
 
-Dabei gilt:
+Das bedeutet:
 
 ```text
-slow -> 1 Schritt
-fast -> 2 Schritte
+nicht leere Liste -> gespeicherter Wert
+leere Liste       -> None
 ```
-
-Wenn `fast` das Ende erreicht, hat `slow` nur ungefähr die halbe Strecke zurückgelegt.
-
-Damit steht `slow` genau in der Mitte.
-
-Bei einer geraden Anzahl von Knoten landet `slow` automatisch auf dem zweiten mittleren Knoten.
 
 ---
 
-# Zusammenfassung
+## Tests
 
-Die Methode verwendet zwei unterschiedlich schnelle Referenzen:
-
-```python
-slow
-fast
-```
-
-Beide starten beim `head`.
-
-Pro Schleifenrunde gilt:
-
-```python
-slow = slow.next
-fast = fast.next.next
-```
-
-Dadurch erreicht `fast` das Ende doppelt so schnell.
-
-Wenn das passiert, befindet sich `slow` in der Mitte.
-
-Die Methode hat:
+Die ursprünglichen Lernfälle prüfen unter anderem:
 
 ```text
-Laufzeit:              O(n)
-zusätzlicher Speicher: O(1)
+5 -> 6
+→ 6
+
+5 -> 6 -> 7
+→ 6
 ```
 
-und benötigt keine vorherige Berechnung der Listenlänge.
+Die Implementierung wird inzwischen automatisiert mit `pytest` geprüft:
+
+[`../tests/test_linked_lists.py`](../tests/test_linked_lists.py)
+
+Dort werden unter anderem getestet:
+
+```text
+ungerade Länge
+gerade Länge
+leere Liste
+ein einzelner Node
+```
+
+---
+
+## Design- und Skalierungsgedanke
+
+Die Aufgabe zeigt ein wichtiges algorithmisches Muster:
+
+> Positionsinformation kann manchmal aus der relativen Bewegung mehrerer Referenzen gewonnen werden, ohne zusätzliche Daten zu speichern.
+
+Statt:
+
+```text
+Länge speichern
+Werte kopieren
+zusätzliche Liste anlegen
+```
+
+werden nur zwei Traversal-Referenzen verwendet.
+
+Das gleiche Grundmuster kann später unter anderem bei:
+
+```text
+Zyklenerkennung
+Abständen zwischen Nodes
+Bestimmung bestimmter Positionen
+```
+
+wieder auftauchen.
+
+---
+
+## Zentrale Lernidee
 
 Die zentrale Erkenntnis lautet:
 
 > **Wenn sich ein Zeiger doppelt so schnell durch eine Linked List bewegt wie ein anderer, befindet sich der langsamere Zeiger in der Mitte, sobald der schnelle Zeiger das Ende erreicht.**
+
+Damit erreicht die Methode:
+
+```text
+Laufzeit:       O(n)
+Zusatzspeicher: O(1)
+```
+
+ohne vorherige Berechnung der Listenlänge.
+
+---
+
+## Weiterführend
+
+- [`README.md`](README.md) – Linked-List-Grundlagen
+- [`linked_list_append_o1_explanation.md`](linked_list_append_o1_explanation.md) – Tail Pointer
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – Slow / Fast Pointer
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – lineare Laufzeit und konstanter Zusatzspeicher
+- [`../tests/test_linked_lists.py`](../tests/test_linked_lists.py) – automatisierte Tests

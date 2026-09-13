@@ -8,165 +8,87 @@ Die Methode
 reverse()
 ```
 
-soll die Richtung aller `next`-Verknüpfungen einer `LinkedList` **in-place** umdrehen.
+soll die Richtung aller `next`-Verknüpfungen einer Linked List **in-place** umdrehen.
 
-**In-place** bedeutet:
+In-place bedeutet:
 
-> Die vorhandenen Knoten werden weiterverwendet.  
-> Es wird keine zweite Linked List mit neuen Knoten aufgebaut.
-
-Dafür werden mehrere Referenzen gleichzeitig benötigt, damit beim Umhängen eines `next`-Links der noch nicht bearbeitete Teil der Liste erreichbar bleibt.
+> Die vorhandenen Nodes werden weiterverwendet. Es wird keine zweite Linked List mit neuen Nodes aufgebaut.
 
 Beispiel:
 
 ```text
 Vorher:
-5 -> 6 -> 7
+5 -> 6 -> 7 -> None
 
 Nachher:
-7 -> 6 -> 5
+7 -> 6 -> 5 -> None
 ```
+
+Die allgemeinen Linked-List-Grundlagen sind in [`README.md`](README.md) zusammengefasst.
+
+Hier liegt der Fokus auf dem **sicheren Umhängen von Referenzen mit Previous / Current / Next**.
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Muster | Previous / Current / Next |
+| Veränderung | in-place |
+| Laufzeit | `O(n)` |
+| Zusatzspeicher | `O(1)` |
+| Kernidee | Nächsten Node sichern, bevor `current.next` verändert wird |
+| wichtigste Gefahr | Verbindung zum unbearbeiteten Rest verlieren |
+| Datenintegrität | alter Head muss zum neuen Tail mit `next = None` werden |
+
+---
+
+## Relevante Implementierung
 
 ```python
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-
-
 class LinkedList:
-    def __init__(self):
-        self.head = None
+    def __init__(self) -> None:
+        self.head: Node | None = None
 
-    def reverse(self):
-        previous = None
+    def reverse(self) -> None:
+        previous: Node | None = None
         current = self.head
 
         while current:
-            # Save the next node before reversing the current link.
             next_node = current.next
 
             current.next = previous
 
-            # Move both references one node forward.
             previous = current
             current = next_node
 
-        # The old last node is now the first node.
         self.head = previous
-
-    def append(self, data):
-        new_node = Node(data)
-
-        if not self.head:
-            self.head = new_node
-            return
-
-        last_node = self.head
-
-        while last_node.next:
-            last_node = last_node.next
-
-        last_node.next = new_node
-
-    def __str__(self):
-        elements = []
-        current = self.head
-
-        while current:
-            elements.append(current.data)
-            current = current.next
-
-        return "->".join(map(str, elements))
-
-
-# Test
-ll = LinkedList()
-
-ll.append(5)
-ll.append(6)
-
-ll.reverse()
-
-print(ll)
 ```
 
-Erwartete Ausgabe:
-
-```text
-6->5
-```
+Die vollständige und aktuelle Implementierung befindet sich in [`linked_list_reverse.py`](linked_list_reverse.py).
 
 ---
 
-# 1. Wiederholung: Wie ist eine Linked List aufgebaut?
+## Was „in-place“ hier bedeutet
 
-Eine einfach verkettete Liste besteht aus Knoten.
-
-Jeder Knoten enthält:
+Die vorhandenen Nodes:
 
 ```text
-data
-next
-```
-
-`data` speichert den eigentlichen Wert.
-
-`next` zeigt auf den nächsten Knoten.
-
-Beispiel:
-
-```text
-head
- ↓
 [5] -> [6] -> [7] -> None
 ```
 
-Der letzte Knoten zeigt auf:
+werden nicht kopiert.
+
+Stattdessen werden nur ihre `next`-Referenzen umgedreht:
 
 ```text
-None
-```
-
-Damit wissen wir, dass die Liste dort endet.
-
----
-
-# 2. Was bedeutet „in-place“?
-
-Eine mögliche, aber hier nicht gewünschte Lösung wäre:
-
-1. eine neue Linked List erzeugen,
-2. alle Werte aus der alten Liste lesen,
-3. neue Knoten in umgekehrter Reihenfolge erzeugen.
-
-Das wäre **nicht in-place**.
-
-Bei einer In-place-Lösung bleiben dieselben Knoten bestehen.
-
-Wir ändern nur ihre Verbindungen:
-
-```text
-Vorher:
-
-[5] -> [6] -> [7] -> None
-```
-
-wird zu:
-
-```text
-Nachher:
-
 [5] <- [6] <- [7]
                ↑
               head
 ```
 
-bzw. in normaler Leserichtung:
+In normaler Leserichtung:
 
 ```text
 head
@@ -174,318 +96,183 @@ head
 [7] -> [6] -> [5] -> None
 ```
 
----
-
-# 3. Die drei wichtigen Referenzen
-
-Für die Umkehrung verwenden wir drei Referenzen:
-
-```python
-previous
-current
-next_node
-```
-
-Sie haben unterschiedliche Aufgaben.
-
-## `previous`
-
-```python
-previous = None
-```
-
-zeigt auf den Knoten, der nach dem Umdrehen hinter `current` liegen soll.
-
-Am Anfang gibt es noch keinen vorherigen Knoten.
-
-Deshalb:
-
-```text
-previous = None
-```
+Damit bleiben dieselben Objekte erhalten.
 
 ---
 
-## `current`
+## Die drei wichtigen Referenzen
+
+### `previous`
+
+```python
+previous: Node | None = None
+```
+
+zeigt auf den bereits umgedrehten Teil der Liste.
+
+Am Anfang existiert dieser Teil noch nicht.
+
+### `current`
 
 ```python
 current = self.head
 ```
 
-zeigt auf den Knoten, den wir gerade bearbeiten.
+zeigt auf den Node, der gerade bearbeitet wird.
 
-Zu Beginn ist das der erste Knoten der Liste.
-
----
-
-## `next_node`
+### `next_node`
 
 ```python
 next_node = current.next
 ```
 
-speichert den nächsten Knoten, **bevor** wir `current.next` verändern.
+sichert den ursprünglichen Nachfolger von `current`.
 
-Das ist der wichtigste Sicherheitsmechanismus des Algorithmus.
+Diese Referenz ist der entscheidende Schutz davor, den noch nicht bearbeiteten Rest der Liste zu verlieren.
 
 ---
 
-# 4. Warum müssen wir `next_node` zuerst speichern?
+## Die entscheidende Reihenfolge
 
-Nehmen wir an:
+Für jeden Node passieren immer vier Schritte:
+
+```text
+1. nächsten Node sichern
+2. aktuellen Link umdrehen
+3. previous weiterschieben
+4. current weiterschieben
+```
+
+Im Code:
+
+```python
+next_node = current.next
+current.next = previous
+previous = current
+current = next_node
+```
+
+Die Reihenfolge ist nicht beliebig.
+
+---
+
+## Warum `next_node` zuerst gespeichert werden muss
+
+Ausgang:
 
 ```text
 [5] -> [6] -> [7] -> None
 ```
 
-und `current` zeigt auf:
+`current` zeigt auf `5`.
 
-```text
-5
-```
-
-Wenn wir direkt schreiben würden:
+Wenn sofort:
 
 ```python
 current.next = previous
 ```
 
-wird aus:
-
-```text
-5 -> 6
-```
-
-sofort:
-
-```text
-5 -> None
-```
-
-Damit verlieren wir über `5` die Referenz auf:
-
-```text
-6
-```
-
-und damit auch auf den Rest der Liste.
-
-Deshalb speichern wir vorher:
-
-```python
-next_node = current.next
-```
-
-Jetzt kennen wir `6` weiterhin, selbst nachdem wir den Link von `5` verändern.
-
----
-
-# 5. Der eigentliche Umkehrschritt
-
-Die entscheidende Zeile lautet:
-
-```python
-current.next = previous
-```
-
-Sie dreht die Richtung des aktuellen Links um.
-
-Am Anfang gilt:
-
-```text
-previous = None
-current  = 5
-```
-
-Also wird:
-
-```python
-5.next = None
-```
-
-Das ist korrekt, denn `5` soll später der letzte Knoten der umgekehrten Liste sein.
-
----
-
-# 6. Danach wandern die Referenzen weiter
-
-Nach dem Umdrehen des Links:
-
-```python
-previous = current
-current = next_node
-```
-
-Wir schieben beide Referenzen einen Knoten nach vorne.
-
-Nach dem ersten Schritt:
-
-```text
-previous -> 5
-current  -> 6
-```
-
-Der bereits umgedrehte Teil ist:
-
-```text
-[5] -> None
-```
-
-Der noch nicht bearbeitete Teil beginnt bei:
-
-```text
-[6] -> [7] -> None
-```
-
----
-
-# 7. Komplettes Beispiel mit `5 -> 6 -> 7`
-
-Ausgangszustand:
-
-```text
-previous
-   ↓
-  None
-
-current
-  ↓
- [5] -> [6] -> [7] -> None
-```
-
----
-
-## Iteration 1
-
-Zuerst:
-
-```python
-next_node = current.next
-```
-
-Damit:
-
-```text
-next_node -> 6
-```
-
-Dann:
-
-```python
-current.next = previous
-```
-
-Aus:
-
-```text
-5 -> 6
-```
-
-wird:
-
-```text
-5 -> None
-```
-
-Danach:
-
-```python
-previous = current
-current = next_node
-```
-
-Jetzt:
-
-```text
-previous -> 5
-current  -> 6
-```
-
----
-
-## Iteration 2
-
-`next_node` speichert:
-
-```text
-7
-```
-
-Dann wird:
-
-```text
-6 -> 5
-```
-
-Danach:
-
-```text
-previous -> 6
-current  -> 7
-```
-
-Der bereits umgekehrte Teil ist jetzt:
-
-```text
-6 -> 5 -> None
-```
-
----
-
-## Iteration 3
-
-`next_node` ist:
+ausgeführt wird, zeigt `5.next` anschließend auf:
 
 ```text
 None
 ```
 
-Dann wird:
+Die ursprüngliche Verbindung zu `6` wäre damit über `current` verloren.
 
-```text
-7 -> 6
+Deshalb zuerst:
+
+```python
+next_node = current.next
 ```
 
-Danach:
-
-```text
-previous -> 7
-current  -> None
-```
-
-Jetzt endet die Schleife.
+Damit bleibt der Rest der Liste erreichbar, auch nachdem der aktuelle Link umgedreht wurde.
 
 ---
 
-# 8. Warum wird `self.head = previous` gesetzt?
+## Schritt für Schritt
 
-Nach der letzten Schleifenrunde zeigt:
+Ausgang:
+
+```text
+previous -> None
+current  -> 5
+
+[5] -> [6] -> [7] -> None
+```
+
+### Iteration 1
+
+```text
+next_node -> 6
+5.next    -> None
+previous  -> 5
+current   -> 6
+```
+
+Bereits umgedreht:
+
+```text
+5 -> None
+```
+
+Noch unbearbeitet:
+
+```text
+6 -> 7 -> None
+```
+
+### Iteration 2
+
+```text
+next_node -> 7
+6.next    -> 5
+previous  -> 6
+current   -> 7
+```
+
+Bereits umgedreht:
+
+```text
+6 -> 5 -> None
+```
+
+### Iteration 3
+
+```text
+next_node -> None
+7.next    -> 6
+previous  -> 7
+current   -> None
+```
+
+Die Schleife endet.
+
+---
+
+## Warum `self.head = previous` notwendig ist
+
+Nach der letzten Iteration zeigt:
 
 ```python
 previous
 ```
 
-auf den alten letzten Knoten.
-
-Bei:
-
-```text
-5 -> 6 -> 7
-```
-
-ist das:
+auf den ursprünglich letzten Node:
 
 ```text
 7
 ```
 
-Dieser Knoten muss jetzt der neue Anfang der Liste werden:
+Dieser Node ist jetzt der neue Listenanfang.
+
+Deshalb:
 
 ```python
 self.head = previous
 ```
 
-Danach:
+Ergebnis:
 
 ```text
 head
@@ -493,33 +280,17 @@ head
 [7] -> [6] -> [5] -> None
 ```
 
-Die Liste ist vollständig umgekehrt.
-
 ---
 
-# 9. Warum entsteht keine zirkuläre Liste?
+## Warum der alte Head korrekt zum Tail wird
 
-Die Aufgabe warnt ausdrücklich davor, versehentlich eine zirkuläre Liste zu erzeugen.
-
-Das könnte passieren, wenn Referenzen falsch gesetzt werden und beispielsweise:
-
-```text
-5 -> 6
-↑    ↓
-└────┘
-```
-
-entsteht.
-
-Unser Algorithmus verhindert das dadurch, dass jeder Link kontrolliert genau einmal umgedreht wird.
-
-Besonders wichtig ist der erste Schritt:
+Am Anfang ist:
 
 ```python
 previous = None
 ```
 
-Dadurch wird beim alten ersten Knoten:
+Beim ersten Node wird deshalb:
 
 ```python
 current.next = previous
@@ -531,211 +302,230 @@ zu:
 old_head.next = None
 ```
 
-Der alte erste Knoten wird damit korrekt zum neuen letzten Knoten.
+Der alte erste Node wird damit automatisch zum neuen letzten Node.
+
+Das ist wichtig, um:
+
+```text
+keinen Zyklus
+kein altes Vorwärtsende
+korrektes Listenende
+```
+
+zu erhalten.
 
 ---
 
-# 10. Laufzeitkomplexität
+## Gefährlicher Fehler: falsche Reihenfolge
 
-Wir durchlaufen jeden Knoten genau einmal:
-
-```python
-while current:
-```
-
-Bei `n` Knoten läuft die Schleife `n`-mal.
-
-Pro Knoten führen wir nur konstante Operationen aus:
-
-```python
-next_node = current.next
-current.next = previous
-previous = current
-current = next_node
-```
-
-Damit ergibt sich insgesamt:
-
-```text
-O(n)
-```
-
----
-
-# 11. Speicherkomplexität
-
-Die Methode erzeugt keine neue Liste und keine neuen Knoten.
-
-Wir verwenden nur drei zusätzliche Referenzen:
-
-```python
-previous
-current
-next_node
-```
-
-Unabhängig davon, ob die Linked List 5 oder 5 Millionen Knoten enthält, bleiben es dieselben drei Referenzen.
-
-Deshalb beträgt der zusätzliche Speicherbedarf:
-
-```text
-O(1)
-```
-
-Das ist ein wichtiger Vorteil der In-place-Lösung.
-
----
-
-# 12. Sonderfall: Leere Liste
-
-Bei einer leeren Liste gilt:
-
-```python
-self.head = None
-```
-
-Dann:
-
-```python
-current = self.head
-```
-
-ergibt ebenfalls:
-
-```text
-None
-```
-
-Die Schleife:
-
-```python
-while current:
-```
-
-wird kein einziges Mal ausgeführt.
-
-Am Ende:
-
-```python
-self.head = previous
-```
-
-wobei `previous` ebenfalls `None` ist.
-
-Die Liste bleibt korrekt leer.
-
-Wir brauchen dafür keine zusätzliche Sonderbehandlung.
-
----
-
-# 13. Sonderfall: Nur ein Knoten
-
-Ausgangslage:
-
-```text
-head
- ↓
-[5] -> None
-```
-
-Dann:
-
-```text
-previous = None
-current = 5
-```
-
-In der Schleife:
-
-```text
-next_node = None
-5.next = None
-previous = 5
-current = None
-```
-
-Danach:
-
-```python
-self.head = previous
-```
-
-Der Head zeigt weiterhin auf `5`.
-
-Die Liste bleibt:
-
-```text
-[5] -> None
-```
-
-Auch dieser Randfall funktioniert automatisch.
-
----
-
-# 14. Was ist der gefährlichste Fehler bei dieser Aufgabe?
-
-Der kritischste Fehler wäre, den nächsten Knoten nicht zu speichern.
-
-Zum Beispiel:
+Problematisch wäre zum Beispiel:
 
 ```python
 current.next = previous
 current = current.next
 ```
 
-Das funktioniert nicht.
-
-Warum?
-
-Nach:
+Nach dem ersten Befehl zeigt:
 
 ```python
-current.next = previous
+current.next
 ```
 
-zeigt `current.next` bereits **rückwärts**.
+bereits **rückwärts**.
 
-Wir würden also nicht mehr zum ursprünglichen nächsten Knoten laufen.
+Der zweite Befehl würde daher nicht zum ursprünglichen nächsten Node weitergehen.
 
-Die Verbindung zum unbearbeiteten Rest der Liste wäre verloren.
+Die Verbindung zum unbearbeiteten Rest wäre verloren.
 
-Deshalb ist:
+Genau deshalb ist:
 
 ```python
 next_node = current.next
 ```
 
-vor dem Umdrehen so wichtig.
+vor dem Umdrehen unverzichtbar.
 
 ---
 
-# 15. Warum verwenden wir keine neue Liste?
+## Komplexität
 
-Eine einfachere gedankliche Lösung könnte sein:
+### Laufzeit
+
+Jeder Node wird genau einmal verarbeitet:
+
+```python
+while current:
+```
+
+Pro Node erfolgen nur konstante Referenzoperationen.
+
+Damit:
 
 ```text
-alte Liste lesen
-Werte speichern
+reverse() -> O(n)
+```
+
+### Zusatzspeicher
+
+Es werden nur drei lokale Referenzen verwendet:
+
+```text
+previous
+current
+next_node
+```
+
+Ihre Anzahl hängt nicht von `n` ab.
+
+Damit:
+
+```text
+O(1)
+```
+
+zusätzlicher Speicher.
+
+---
+
+## Randfälle
+
+### Leere Liste
+
+```text
+head = None
+```
+
+`current` ist sofort `None`.
+
+Die Schleife läuft nicht.
+
+`self.head = previous` setzt erneut:
+
+```text
+None
+```
+
+Die Liste bleibt korrekt leer.
+
+### Ein Node
+
+```text
+[5] -> None
+```
+
+Der einzige Link wird auf `None` gesetzt, was bereits der korrekte Zustand ist.
+
+`head` zeigt anschließend weiterhin auf `5`.
+
+Es ist keine Sonderlogik nötig.
+
+---
+
+## Datenintegrität
+
+Bei dieser Aufgabe liegen die wichtigsten Fehler nicht in Benutzereingaben, sondern im **internen Zustand der Datenstruktur**.
+
+Nach `reverse()` muss gelten:
+
+```text
+kein Node verloren
+jeder next-Link korrekt umgedreht
+kein unbeabsichtigter Zyklus
+neuer head korrekt gesetzt
+alter head.next == None
+```
+
+Das macht die Aufgabe zu einem guten Beispiel dafür, dass Robustheit bei Datenstrukturen oft bedeutet, **Referenz-Invarianten** zu schützen.
+
+---
+
+## Warum keine neue Liste verwendet wird
+
+Eine alternative Lösung könnte:
+
+```text
+Werte lesen
+neue Nodes erzeugen
 neue Liste rückwärts aufbauen
 ```
 
-Das würde zusätzliche Datenstrukturen oder neue Knoten benötigen.
+Das würde zusätzlichen Speicher benötigen.
 
-Die Aufgabe fordert aber ausdrücklich:
+Die In-place-Lösung verwendet stattdessen:
 
 ```text
-in-place
+Laufzeit:       O(n)
+Zusatzspeicher: O(1)
 ```
 
-Darum verändern wir nur die vorhandenen `next`-Referenzen.
-
-Das spart zusätzlichen Speicher und trainiert gleichzeitig das Verständnis von Referenzen.
+und verändert nur die vorhandenen Verknüpfungen.
 
 ---
 
-# 16. Design- und Skalierungsgedanke
+## Hinweis zu `append()`
 
-Diese Aufgabe zeigt einen sehr wichtigen Unterschied zwischen:
+Die `append()`-Methode dieser eigenständigen Übungsdatei sucht das Ende weiterhin durch Traversieren:
+
+```python
+while last_node.next:
+    last_node = last_node.next
+```
+
+Damit gilt dort:
+
+```text
+append() -> O(n)
+```
+
+Das ist bewusst nicht das Lernziel dieser Datei.
+
+Die separate Übung [`linked_list_append_o1_explanation.md`](linked_list_append_o1_explanation.md) behandelt die Optimierung mit einem `tail`-Pointer.
+
+---
+
+## Typvertrag
+
+Die aktuelle Methode lautet:
+
+```python
+reverse(self) -> None
+```
+
+Sie gibt keinen neuen Listenwert zurück, sondern verändert die bestehende Linked List **in-place**.
+
+---
+
+## Tests
+
+Der ursprüngliche Lernfall kehrt:
+
+```text
+5 -> 6
+```
+
+um zu:
+
+```text
+6 -> 5
+```
+
+Die Implementierung wird inzwischen zusätzlich automatisiert mit `pytest` geprüft:
+
+[`../tests/test_linked_lists.py`](../tests/test_linked_lists.py)
+
+Dort werden unter anderem getestet:
+
+```text
+mehrere Nodes
+leere Liste
+ein einzelner Node
+```
+
+---
+
+## Design- und Skalierungsgedanke
+
+Die Aufgabe zeigt den Unterschied zwischen:
 
 ```text
 Daten kopieren
@@ -747,106 +537,29 @@ und:
 bestehende Struktur verändern
 ```
 
-Die In-place-Lösung benötigt:
+Die In-place-Variante spart zusätzlichen Speicher, erhöht aber die Anforderungen an die korrekte Reihenfolge der Referenzänderungen.
+
+Das ist ein typischer Trade-off:
 
 ```text
-O(1)
+weniger Zusatzspeicher
+↔
+höhere Sorgfalt bei Mutation
 ```
 
-zusätzlichen Speicher.
+Bei mutable Datenstrukturen ist es deshalb besonders wichtig, vor jeder Änderung zu fragen:
 
-Eine Lösung, die alle Knoten oder Werte kopiert, könnte dagegen:
-
-```text
-O(n)
-```
-
-zusätzlichen Speicher benötigen.
-
-Bei kleinen Listen ist der Unterschied kaum relevant.
-
-Bei sehr großen Datenstrukturen kann er aber wichtig werden.
+> Welche Referenz brauche ich nach diesem Schritt noch?
 
 ---
 
-# 17. Fehlerfälle und Datenintegrität
+## Zentrale Lernidee
 
-Hier geht es weniger um ungültige Benutzereingaben und mehr um die **Integrität der Datenstruktur**.
+Die zentrale Erkenntnis lautet:
 
-Beim Verändern von Referenzen müssen wir sicherstellen, dass:
+> **Beim In-place-Umkehren einer Linked List muss der ursprüngliche nächste Node immer zuerst gespeichert werden, bevor die aktuelle `next`-Referenz umgedreht wird.**
 
-- kein Knoten verloren geht,
-- kein Link versehentlich auf sich selbst zeigt,
-- keine zirkuläre Struktur entsteht,
-- der neue `head` korrekt gesetzt wird,
-- der alte `head` am Ende auf `None` zeigt.
-
-Das ist ein gutes Beispiel dafür, dass „Fehlerfälle“ bei Datenstrukturen nicht immer Formulareingaben oder Exceptions sind.
-
-Manchmal besteht Robustheit vor allem darin, die internen Zustände korrekt zu erhalten.
-
----
-
-# 18. Hinweis zur `append()`-Methode in dieser Aufgabe
-
-Die hier gegebene `append()`-Methode sucht das Listenende jedes Mal mit:
-
-```python
-while last_node.next:
-    last_node = last_node.next
-```
-
-Deshalb ist dieses `append()`:
-
-```text
-O(n)
-```
-
-Das ist für die aktuelle Reverse-Aufgabe vollkommen in Ordnung.
-
-In der vorherigen Übung haben wir bereits gesehen, wie man mit einem zusätzlichen:
-
-```python
-self.tail
-```
-
-das Anhängen auf:
-
-```text
-O(1)
-```
-
-verbessern kann.
-
-Die beiden Aufgaben verfolgen also unterschiedliche Lernziele:
-
-```text
-vorherige Aufgabe -> schnelles Anhängen mit tail
-diese Aufgabe     -> Links in-place umkehren
-```
-
----
-
-# 19. Zentrale Lernidee
-
-Der Algorithmus funktioniert durch drei Referenzen:
-
-```text
-previous
-current
-next_node
-```
-
-Für jeden Knoten passiert immer dieselbe Reihenfolge:
-
-```text
-1. nächsten Knoten sichern
-2. aktuellen Link umdrehen
-3. previous weiterschieben
-4. current weiterschieben
-```
-
-Kurz:
+Der Kernalgorithmus:
 
 ```python
 next_node = current.next
@@ -855,43 +568,14 @@ previous = current
 current = next_node
 ```
 
-Diese Reihenfolge ist entscheidend.
-
-Wird sie verändert, kann man den restlichen Teil der Liste verlieren oder falsche Verknüpfungen erzeugen.
+ist ein wiederverwendbares Referenzmuster für strukturelle Änderungen an verketteten Listen.
 
 ---
 
-# Zusammenfassung
+## Weiterführend
 
-Eine Linked List:
-
-```text
-5 -> 6 -> 7 -> None
-```
-
-wird durch das Umdrehen ihrer `next`-Referenzen zu:
-
-```text
-7 -> 6 -> 5 -> None
-```
-
-Wir benötigen dafür keine neue Liste.
-
-Die Methode verwendet nur:
-
-```python
-previous
-current
-next_node
-```
-
-und arbeitet dadurch mit:
-
-```text
-Laufzeit:             O(n)
-zusätzlicher Speicher: O(1)
-```
-
-Die wichtigste Erkenntnis lautet:
-
-> **Beim In-place-Umkehren einer Linked List muss der ursprüngliche nächste Knoten immer zuerst gespeichert werden, bevor die aktuelle `next`-Referenz umgedreht wird.**
+- [`README.md`](README.md) – Linked-List-Grundlagen und Referenzinvarianten
+- [`linked_list_append_o1_explanation.md`](linked_list_append_o1_explanation.md) – Tail Pointer und zusätzliche Invarianten
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – Previous / Current / Next
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – Zeit- und Speicherkomplexität
+- [`../tests/test_linked_lists.py`](../tests/test_linked_lists.py) – automatisierte Tests

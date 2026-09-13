@@ -8,7 +8,9 @@ Die Methode
 remove_duplicates()
 ```
 
-soll eine verkettete Liste einmal durchlaufen und spätere Wiederholungen bereits gesehener Werte entfernen. **Das erste Vorkommen bleibt jeweils erhalten.**
+soll eine Linked List einmal durchlaufen und spätere Wiederholungen bereits gesehener Werte entfernen.
+
+Das **erste Vorkommen** eines Werts bleibt erhalten.
 
 Beispiel:
 
@@ -20,31 +22,61 @@ Nachher:
 5 -> 6 -> 7
 ```
 
-Ein `set` dient dabei als Hilfsstruktur für die bereits beobachteten Werte.
+Ein `set` dient als Hilfsstruktur für bereits beobachtete Werte.
+
+Die allgemeinen Linked-List-Grundlagen stehen in [`README.md`](README.md).
+
+Hier liegt der Fokus auf der Kombination aus:
+
+```text
+Seen Set
++
+previous/current
++
+gezieltem Umhängen von next
+```
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Hauptstruktur | Linked List |
+| Hilfsstruktur | `set` |
+| Muster | Seen Set + Previous / Current |
+| durchschnittliche Laufzeit | `O(n)` |
+| Zusatzspeicher | `O(n)` |
+| ohne Set | Worst Case `O(n²)` |
+| Kernidee | Duplikate werden durch Umhängen von `previous.next` übersprungen |
+| wichtige Voraussetzung | gespeicherte Werte müssen hashbar sein |
+
+---
+
+## Relevante Implementierung
 
 ```python
+from collections.abc import Hashable
+
+
 class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
+    def __init__(self, data: Hashable) -> None:
+        self.data: Hashable = data
+        self.next: Node | None = None
 
 
 class LinkedList:
-    def __init__(self):
-        self.head = None
+    def __init__(self) -> None:
+        self.head: Node | None = None
 
-    def remove_duplicates(self):
-        seen = set()
+    def remove_duplicates(self) -> None:
+        seen: set[Hashable] = set()
         current = self.head
-        previous = None
+        previous: Node | None = None
 
         while current:
-            # Skip nodes whose value has already appeared.
             if current.data in seen:
+                assert previous is not None
                 previous.next = current.next
 
             else:
@@ -52,246 +84,110 @@ class LinkedList:
                 previous = current
 
             current = current.next
-
-    def append(self, data):
-        new_node = Node(data)
-
-        if not self.head:
-            self.head = new_node
-            return
-
-        last_node = self.head
-
-        while last_node.next:
-            last_node = last_node.next
-
-        last_node.next = new_node
-
-    def __str__(self):
-        elements = []
-        current = self.head
-
-        while current:
-            elements.append(current.data)
-            current = current.next
-
-        return "->".join(map(str, elements))
-
-
-# Test
-ll = LinkedList()
-
-ll.append(5)
-ll.append(5)
-ll.append(6)
-ll.append(5)
-ll.append(7)
-ll.append(6)
-
-print(f"Before: {ll}")
-
-ll.remove_duplicates()
-
-print(f"After:  {ll}")
 ```
 
-Erwartete Ausgabe:
-
-```text
-Before: 5->5->6->5->7->6
-After:  5->6->7
-```
+Die vollständige und aktuelle Implementierung befindet sich in [`linked_list_remove_duplicates.py`](linked_list_remove_duplicates.py).
 
 ---
 
-# 1. Grundidee
+## Grundidee
 
-Wir durchlaufen die Linked List genau einmal.
-
-Währenddessen merken wir uns in einem `set`, welche Werte bereits vorgekommen sind:
-
-```python
-seen = set()
-```
-
-Wenn ein Wert zum ersten Mal erscheint, wird er in `seen` gespeichert.
-
-Wenn derselbe Wert später erneut auftaucht, entfernen wir diesen Knoten aus der Liste.
-
----
-
-# 2. Warum eignet sich ein `set`?
-
-Ein Python-`set` speichert eindeutige Werte.
-
-Zum Beispiel:
-
-```python
-seen = set()
-
-seen.add(5)
-seen.add(6)
-```
-
-Danach enthält es sinngemäß:
-
-```text
-{5, 6}
-```
-
-Wir können sehr schnell prüfen:
-
-```python
-5 in seen
-```
-
-Das liefert:
-
-```python
-True
-```
-
-und:
-
-```python
-7 in seen
-```
-
-liefert:
-
-```python
-False
-```
-
-Mit einem Set sind solche Mitgliedschaftsprüfungen im Durchschnitt:
-
-```text
-O(1)
-```
-
-Das ist der entscheidende Vorteil gegenüber einer Liste als Hilfsstruktur.
-
----
-
-# 3. Die drei wichtigen Variablen
-
-Wir verwenden:
+Während eines einzigen Traversals merkt sich:
 
 ```python
 seen
-current
-previous
 ```
 
-## `seen`
+alle Werte, die bereits mindestens einmal vorkamen.
 
-```python
-seen = set()
-```
-
-Speichert alle Werte, die bereits mindestens einmal aufgetreten sind.
-
----
-
-## `current`
-
-```python
-current = self.head
-```
-
-Zeigt auf den Knoten, den wir gerade untersuchen.
-
----
-
-## `previous`
-
-```python
-previous = None
-```
-
-Zeigt auf den letzten Knoten, den wir **behalten** haben.
-
-Diese Referenz brauchen wir, um einen doppelten Knoten aus der Kette herauszunehmen.
-
----
-
-# 4. Erster Knoten
-
-Nehmen wir:
+Für jeden Node gibt es zwei Fälle:
 
 ```text
-5 -> 5 -> 6
+Wert noch nicht gesehen
+→ behalten
+→ in seen eintragen
+→ previous weiterschieben
+
+Wert bereits gesehen
+→ Node überspringen
+→ previous bleibt stehen
 ```
 
-Am Anfang gilt:
+Dadurch bleibt immer nur das erste Vorkommen erhalten.
 
-```text
-seen = {}
-current -> erster 5-Knoten
-previous = None
-```
+---
 
-Wir prüfen:
+## Warum ein Set?
+
+Mit:
 
 ```python
 current.data in seen
 ```
 
-also:
+kann im Durchschnitt in:
 
 ```text
-5 in {}
+O(1)
 ```
 
-Das ist:
+geprüft werden, ob ein Wert bereits vorkam.
 
-```text
-False
-```
-
-Damit ist `5` neu.
-
-Wir führen aus:
+Auch:
 
 ```python
 seen.add(current.data)
-previous = current
 ```
 
-Jetzt:
+ist durchschnittlich:
 
 ```text
-seen = {5}
-previous -> erster 5-Knoten
+O(1)
 ```
 
-Der erste Wert bleibt erhalten.
+Ohne Set müsste für jeden neuen Node möglicherweise ein großer Teil der bereits besuchten Liste erneut durchsucht werden.
+
+Das könnte im Worst Case zu:
+
+```text
+O(n²)
+```
+
+führen.
 
 ---
 
-# 5. Ein Duplikat erkennen
+## Die drei wichtigen Zustände
 
-Als Nächstes zeigt `current` auf den zweiten `5`-Knoten.
-
-Jetzt prüfen wir:
+### `seen`
 
 ```python
-5 in seen
+seen: set[Hashable] = set()
 ```
 
-Das ergibt:
+enthält alle Werte, die bereits behalten wurden.
 
-```text
-True
+### `current`
+
+```python
+current = self.head
 ```
 
-Dieser Knoten ist also ein Duplikat.
+zeigt auf den Node, der gerade untersucht wird.
 
-Er soll entfernt werden.
+### `previous`
+
+```python
+previous: Node | None = None
+```
+
+zeigt auf den letzten Node, der **in der Liste bleiben soll**.
+
+Diese Unterscheidung ist besonders wichtig, sobald Duplikate entfernt werden.
 
 ---
 
-# 6. Wie entfernt man einen Knoten aus einer einfach verketteten Liste?
+## Einen doppelten Node überspringen
 
 Angenommen:
 
@@ -301,238 +197,112 @@ previous          current
  [5] -------------> [5] -> [6]
 ```
 
-Um den zweiten `5`-Knoten zu überspringen, setzen wir:
+Der zweite `5`-Node ist ein Duplikat.
+
+Durch:
 
 ```python
 previous.next = current.next
 ```
 
-Dadurch zeigt der erste `5`-Knoten direkt auf `6`:
+wird er aus der Kette übersprungen:
 
 ```text
 [5] -> [6]
 ```
 
-Der doppelte Knoten gehört danach nicht mehr zur verketteten Liste.
+Der Node wird nicht manuell aus dem Speicher gelöscht.
 
-Wir müssen dafür keinen neuen Knoten erzeugen.
+Entscheidend ist, dass er von der Linked List aus nicht mehr erreichbar ist.
 
 ---
 
-# 7. Warum wird `previous` bei einem Duplikat nicht verändert?
+## Warum `previous` bei einem Duplikat stehen bleibt
 
 Das ist einer der wichtigsten Punkte der Aufgabe.
 
-Bei einem Duplikat:
-
-```python
-if current.data in seen:
-    previous.next = current.next
-```
-
-bleibt `previous` auf dem letzten gültigen Knoten stehen.
-
-Das ist notwendig, damit auch mehrere Duplikate direkt hintereinander korrekt entfernt werden.
-
 Beispiel:
 
 ```text
 5 -> 5 -> 5 -> 6
 ```
 
-Nach dem ersten `5` zeigt:
+Nach dem ersten `5`:
 
 ```text
-previous -> erster 5-Knoten
-```
-
-Der zweite `5`-Knoten wird entfernt.
-
-`previous` bleibt trotzdem auf dem ersten `5`.
-
-Dann wird auch der dritte `5`-Knoten entfernt.
-
-Erst bei `6`, einem neuen Wert, wandert `previous` weiter.
-
----
-
-# 8. Warum funktioniert das mit mehreren aufeinanderfolgenden Duplikaten?
-
-Ausgangslage:
-
-```text
-5 -> 5 -> 5 -> 6
-```
-
-Nach dem ersten Knoten:
-
-```text
-seen = {5}
 previous -> erstes 5
+seen = {5}
 ```
 
-Beim zweiten `5`:
+Beim zweiten `5` wird:
 
 ```python
 previous.next = current.next
 ```
 
-Ergebnis:
+gesetzt.
 
-```text
-5 -> 5 -> 6
-```
+`previous` bleibt aber auf dem **ersten gültigen `5`**.
 
-Beim dritten `5` wieder:
+Dasselbe geschieht beim dritten `5`.
 
-```python
-previous.next = current.next
-```
+Erst wenn `6` erreicht wird, wandert `previous` weiter.
 
-Ergebnis:
-
-```text
-5 -> 6
-```
-
-Da `previous` währenddessen nicht weitergerückt ist, können beliebig viele direkt folgende Duplikate entfernt werden.
+Dadurch funktionieren auch beliebig viele direkt aufeinanderfolgende Duplikate.
 
 ---
 
-# 9. Warum wird `previous` bei einem neuen Wert aktualisiert?
+## Warum `current` trotzdem weiterlaufen kann
 
-Wenn ein Wert noch nicht vorkam:
-
-```python
-else:
-    seen.add(current.data)
-    previous = current
-```
-
-Dann soll dieser Knoten erhalten bleiben.
-
-Er wird deshalb zum neuen letzten gültigen Knoten.
-
-Beispiel:
-
-```text
-5 -> 6
-```
-
-Nach `5`:
-
-```text
-previous -> 5
-```
-
-Bei `6`:
-
-```text
-6 not in seen
-```
-
-also:
-
-```python
-previous = current
-```
-
-Danach:
-
-```text
-previous -> 6
-```
-
----
-
-# 10. Warum können wir am Ende immer `current = current.next` ausführen?
-
-Am Ende jeder Schleifenrunde:
+Nach jeder Runde:
 
 ```python
 current = current.next
 ```
 
-Bei einem normalen Knoten gehen wir einfach zum nächsten.
+Auch wenn `current` gerade aus der eigentlichen Liste herausgelöst wurde, besitzt dieser lokale Node weiterhin seine ursprüngliche `next`-Referenz.
 
-Auch bei einem entfernten Duplikat funktioniert das:
-
-Der lokale Name `current` zeigt noch auf den entfernten Knoten, und dessen `next`-Referenz zeigt weiterhin auf den ursprünglichen Nachfolger.
-
-Dadurch können wir die Liste korrekt weiter durchlaufen.
+Damit kann der Traversal zum nächsten Node fortgesetzt werden.
 
 ---
 
-# 11. Komplettes Beispiel
+## Beispiel
 
-Ausgangsliste:
+Ausgang:
 
 ```text
 5 -> 5 -> 6 -> 5 -> 7 -> 6
 ```
 
-### Erster Wert: `5`
+Schrittweise:
 
 ```text
-seen = {5}
+5
+→ neu
+→ seen = {5}
 
-Liste:
-5 -> 5 -> 6 -> 5 -> 7 -> 6
+zweites 5
+→ Duplikat
+→ entfernen
+
+6
+→ neu
+→ seen = {5, 6}
+
+nächstes 5
+→ Duplikat
+→ entfernen
+
+7
+→ neu
+→ seen = {5, 6, 7}
+
+letztes 6
+→ Duplikat
+→ entfernen
 ```
 
-Der erste `5` bleibt.
-
-### Zweiter Wert: `5`
-
-Bereits in `seen`.
-
-Knoten entfernen:
-
-```text
-5 -> 6 -> 5 -> 7 -> 6
-```
-
-### Wert: `6`
-
-Noch nicht gesehen:
-
-```text
-seen = {5, 6}
-```
-
-`6` bleibt.
-
-### Nächster Wert: `5`
-
-Bereits gesehen.
-
-Entfernen:
-
-```text
-5 -> 6 -> 7 -> 6
-```
-
-### Wert: `7`
-
-Neu:
-
-```text
-seen = {5, 6, 7}
-```
-
-`7` bleibt.
-
-### Letzter Wert: `6`
-
-Bereits gesehen.
-
-Entfernen:
-
-```text
-5 -> 6 -> 7
-```
-
-Fertiges Ergebnis:
+Ergebnis:
 
 ```text
 5 -> 6 -> 7
@@ -540,213 +310,124 @@ Fertiges Ergebnis:
 
 ---
 
-# 12. Laufzeitkomplexität
+## Komplexität
 
-Sei `n` die Anzahl der Knoten.
+### Laufzeit
 
-Die Schleife:
+Jeder Node wird genau einmal besucht:
 
 ```python
 while current:
 ```
 
-besucht jeden Knoten genau einmal.
-
-Die Operationen:
-
-```python
-current.data in seen
-seen.add(...)
-```
-
-sind bei einem Set im Durchschnitt:
+Set-Mitgliedschaft und Einfügen sind durchschnittlich:
 
 ```text
 O(1)
 ```
 
-Auch das Umhängen einer Referenz:
+Das Umhängen:
 
 ```python
 previous.next = current.next
 ```
 
-ist:
+ist ebenfalls:
 
 ```text
 O(1)
 ```
 
-Damit ergibt sich insgesamt im durchschnittlichen Fall:
+Damit ergibt sich im durchschnittlichen Fall:
 
 ```text
 O(n)
 ```
 
----
+### Zusatzspeicher
 
-# 13. Speicherkomplexität
+Im Worst Case sind alle Werte unterschiedlich und landen im Set.
 
-Im schlimmsten Fall enthält die Liste nur unterschiedliche Werte:
-
-```text
-1 -> 2 -> 3 -> 4 -> 5 -> ...
-```
-
-Dann landen alle `n` Werte im Set:
-
-```python
-seen
-```
-
-Der zusätzliche Speicherbedarf beträgt deshalb:
+Damit:
 
 ```text
 O(n)
 ```
 
-Wir tauschen also zusätzlichen Speicher gegen eine schnelle Duplikatprüfung.
+zusätzlicher Speicher.
 
 ---
 
-# 14. Was wäre eine Lösung ohne Set?
+## Trade-off ohne Set
 
-Man könnte für jeden Knoten alle vorherigen Knoten durchsuchen und prüfen, ob der Wert schon vorkam.
+Ohne Hilfsstruktur könnte man für jeden Node prüfen, ob sein Wert bereits irgendwo davor vorkam.
 
-Das würde ungefähr bedeuten:
-
-```text
-für jeden Knoten:
-    viele andere Knoten durchsuchen
-```
-
-Im Worst Case wäre das:
+Das spart zusätzlichen Set-Speicher, kann aber zu:
 
 ```text
 O(n²)
 ```
 
-Mit dem Set erreichen wir stattdessen durchschnittlich:
+Laufzeit führen.
+
+Mit Set:
 
 ```text
-O(n)
+Laufzeit:       durchschnittlich O(n)
+Zusatzspeicher: O(n)
 ```
 
-Das ist ein klassischer Trade-off:
+Die Übung zeigt damit direkt den klassischen Trade-off:
 
-> Mehr Speicher kann verwendet werden, um Laufzeit zu sparen.
+```text
+mehr Speicher
+↔
+weniger Laufzeit
+```
 
 ---
 
-# 15. Randfall: Leere Liste
+## Randfälle
 
-Wenn:
+### Leere Liste
 
-```python
-self.head = None
-```
+Die Schleife läuft nicht.
 
-dann gilt:
+Die Liste bleibt leer.
 
-```python
-current = self.head
-```
+### Ein Node
 
-also:
+Der Wert wird einmal in `seen` eingetragen.
 
-```text
-current = None
-```
+Es gibt kein Duplikat.
 
-Die Schleife:
-
-```python
-while current:
-```
-
-wird nicht ausgeführt.
-
-Die Methode endet einfach.
-
-Das ist korrekt.
-
----
-
-# 16. Randfall: Nur ein Knoten
-
-Bei:
-
-```text
-5
-```
-
-wird `5` einmal in `seen` eingetragen.
-
-Es gibt keinen zweiten Knoten.
-
-Die Liste bleibt:
-
-```text
-5
-```
-
-Auch dafür ist keine Sonderbehandlung nötig.
-
----
-
-# 17. Randfall: Alle Werte gleich
-
-Beispiel:
+### Alle Werte gleich
 
 ```text
 5 -> 5 -> 5 -> 5
 ```
 
-Der erste `5`-Knoten bleibt.
-
-Alle weiteren werden entfernt.
-
-Ergebnis:
+wird zu:
 
 ```text
 5
 ```
 
-Gerade hier zeigt sich, warum `previous` bei einem Duplikat nicht weiterbewegt werden darf.
-
----
-
-# 18. Randfall: Keine Duplikate
-
-Beispiel:
+### Keine Duplikate
 
 ```text
 1 -> 2 -> 3
 ```
 
-Jeder Wert wird einmal in `seen` eingetragen.
-
-Kein Knoten wird entfernt.
-
-Die Liste bleibt unverändert:
-
-```text
-1 -> 2 -> 3
-```
+bleibt unverändert.
 
 ---
 
-# 19. Wichtiger Robustheitsaspekt: Werte müssen hashbar sein
+## Hashbarkeit als echte Voraussetzung
 
-Da wir ein Python-Set verwenden:
+Da ein Python-Set verwendet wird, müssen die gespeicherten Werte **hashbar** sein.
 
-```python
-seen = set()
-```
-
-müssen die gespeicherten Werte **hashbar** sein.
-
-Typische Werte wie:
+Beispiele für hashbare Werte:
 
 ```python
 5
@@ -754,9 +435,7 @@ Typische Werte wie:
 (1, 2)
 ```
 
-sind hashbar und funktionieren.
-
-Eine veränderbare Liste wie:
+Eine veränderbare Liste:
 
 ```python
 [1, 2]
@@ -764,145 +443,156 @@ Eine veränderbare Liste wie:
 
 ist dagegen nicht hashbar.
 
-Bei:
+Die Type Hints machen diese Voraussetzung inzwischen explizit:
 
 ```python
-seen.add([1, 2])
+data: Hashable
 ```
 
-würde Python einen `TypeError` auslösen.
-
-Für diese Schulaufgabe ist es sehr wahrscheinlich vorgesehen, einfache Werte wie Zahlen oder Strings zu speichern.
-
-In einer allgemeineren Datenstruktur müsste man jedoch bewusst festlegen, welche Datentypen unterstützt werden sollen.
+Damit wird eine Implementierungsannahme Teil des sichtbaren Typvertrags.
 
 ---
 
-# 20. Datenintegrität beim Entfernen
+## Warum das `assert previous is not None` sinnvoll ist
 
-Bei Linked Lists bedeutet Löschen normalerweise nicht, dass wir den Knoten manuell aus dem Speicher entfernen.
+Im Duplikat-Zweig steht:
 
-Wir ändern die Verknüpfung:
+```python
+assert previous is not None
+```
+
+Ein Wert kann nur bereits in `seen` sein, wenn zuvor mindestens ein Node mit diesem Wert behalten wurde.
+
+Deshalb muss es in diesem Zweig einen gültigen `previous`-Node geben.
+
+Das `assert` dokumentiert diese algorithmische Invariante für:
+
+```text
+Leser
++
+Laufzeit
++
+statische Typanalyse
+```
+
+---
+
+## Datenintegrität beim Entfernen
+
+Bei Linked Lists besteht das eigentliche Risiko nicht darin, „ein Objekt zu löschen“, sondern die Verkettung falsch zu verändern.
+
+Entscheidend ist:
 
 ```python
 previous.next = current.next
 ```
 
-Dadurch ist der doppelte Knoten von der Liste aus nicht mehr erreichbar.
+Dadurch muss weiterhin gelten:
 
-Python kann den Speicher später automatisch durch den Garbage Collector freigeben, sobald keine Referenz mehr darauf existiert.
-
-Das Entscheidende ist deshalb die korrekte Pflege der `next`-Referenzen.
+```text
+keine gültigen Nodes gehen verloren
+der Traversal kann fortgesetzt werden
+die Reihenfolge der behaltenen Nodes bleibt erhalten
+```
 
 ---
 
-# 21. Hinweis zu `tail`
+## Zusammenhang mit `tail`
 
-Diese konkrete `LinkedList` besitzt nur:
+Diese konkrete Übungsdatei besitzt kein `tail`-Attribut.
 
-```python
-self.head
-```
+Würde `remove_duplicates()` jedoch in eine Linked-List-Variante mit gespeichertem `tail` integriert, entstünde eine zusätzliche Invariante:
 
-und kein:
+> Wird der letzte Node als Duplikat entfernt, muss `tail` auf den neuen letzten Node aktualisiert werden.
 
-```python
-self.tail
-```
-
-Deshalb müssen wir beim Entfernen von Duplikaten keinen Tail-Zeiger aktualisieren.
-
-Wenn wir diese Methode jedoch mit unserer vorherigen `LinkedList`-Variante kombinieren würden, die ein `tail`-Attribut für `append()` in `O(1)` besitzt, müssten wir einen zusätzlichen Fall bedenken:
-
-> Wird der letzte Knoten als Duplikat entfernt, muss `tail` anschließend auf den neuen letzten Knoten zeigen.
-
-Das ist ein gutes Beispiel dafür, wie neue Optimierungen auch zusätzliche Invarianten erzeugen, die andere Methoden berücksichtigen müssen.
+Das zeigt sehr gut, wie eine Performance-Optimierung in einer Methode zusätzliche Konsistenzanforderungen für andere Methoden erzeugen kann.
 
 ---
 
-# 22. Design- und Skalierungsgedanke
+## Typvertrag
 
-Die Aufgabe zeigt wieder einen wichtigen Software-Engineering-Trade-off:
+Die aktuelle Implementierung verwendet:
 
-```text
-ohne Set:
-weniger zusätzlicher Speicher
-aber möglicherweise O(n²)
+```python
+append(self, data: Hashable) -> None
+remove_duplicates(self) -> None
 ```
 
-gegen:
-
-```text
-mit Set:
-O(n) zusätzlicher Speicher
-aber durchschnittlich O(n) Laufzeit
-```
-
-Bei kleinen Datenmengen ist beides wahrscheinlich schnell genug.
-
-Bei großen Listen wird der Unterschied jedoch erheblich.
+Damit wird die Set-Voraussetzung bereits über den Typ sichtbar gemacht.
 
 ---
 
-# 23. Zentrale Lernidee
+## Tests
 
-Der Algorithmus kombiniert zwei Datenstrukturen:
+Die dokumentierte Beispielliste:
 
-## Linked List
-
-Die eigentlichen Knoten werden durch ihre `next`-Referenzen verbunden.
-
-## Set
-
-Merkt sich effizient, welche Werte bereits vorgekommen sind.
-
-Wenn ein Wert doppelt vorkommt, überspringen wir den entsprechenden Knoten mit:
-
-```python
-previous.next = current.next
+```text
+5 -> 5 -> 6 -> 5 -> 7 -> 6
 ```
 
-Dabei bleibt `previous` bewusst stehen, damit auch direkt aufeinanderfolgende Duplikate korrekt entfernt werden.
+wird zu:
+
+```text
+5 -> 6 -> 7
+```
+
+Die Implementierung wird inzwischen automatisiert mit `pytest` geprüft:
+
+[`../tests/test_linked_lists.py`](../tests/test_linked_lists.py)
+
+Dabei werden unter anderem getestet:
+
+```text
+spätere Duplikate
+direkt aufeinanderfolgende Duplikate
+leere Liste
+Erhalt des ersten Vorkommens
+```
 
 ---
 
-# Zusammenfassung
+## Design- und Skalierungsgedanke
 
-Die Methode verwendet:
-
-```python
-seen = set()
-current = self.head
-previous = None
-```
-
-Bei einem neuen Wert:
-
-```python
-seen.add(current.data)
-previous = current
-```
-
-Bei einem Duplikat:
-
-```python
-previous.next = current.next
-```
-
-Damit bleibt immer nur das erste Vorkommen eines Wertes erhalten.
-
-Die durchschnittliche Laufzeit beträgt:
+Die Lösung kombiniert zwei Datenstrukturen mit unterschiedlichen Stärken:
 
 ```text
-O(n)
+Linked List
+→ Nodes können durch Referenzänderung direkt übersprungen werden
+
+Set
+→ bereits gesehene Werte können durchschnittlich in O(1) erkannt werden
 ```
 
-Der zusätzliche Speicherbedarf beträgt:
+Zusammen entsteht ein linearer Algorithmus auf Kosten zusätzlichen Speichers.
+
+Diese Kombination ist ein typisches Beispiel dafür, dass Algorithmen häufig **mehrere Datenstrukturen gezielt zusammen einsetzen**, statt nur eine einzige Struktur isoliert zu verwenden.
+
+---
+
+## Zentrale Lernidee
+
+Die zentrale Erkenntnis lautet:
+
+> **Ein Set ermöglicht eine schnelle Prüfung bereits gesehener Werte, während `previous.next = current.next` einen doppelten Node direkt aus der Linked List überspringt.**
+
+Besonders wichtig ist dabei:
 
 ```text
-O(n)
+Duplikat
+→ previous bleibt stehen
+
+neuer Wert
+→ previous bewegt sich weiter
 ```
 
-Die wichtigste Erkenntnis lautet:
+Genau diese Invariante sorgt dafür, dass auch aufeinanderfolgende Duplikate korrekt entfernt werden.
 
-> **Ein Set ermöglicht eine schnelle Prüfung bereits gesehener Werte, während `previous.next = current.next` den doppelten Knoten direkt aus der Linked List überspringt.**
+---
+
+## Weiterführend
+
+- [`README.md`](README.md) – Linked-List-Grundlagen und Referenzänderungen
+- [`linked_list_append_o1_explanation.md`](linked_list_append_o1_explanation.md) – zusätzliche `tail`-Invariante
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – Seen Set und Previous / Current
+- [`../docs/python_collections_complexity.md`](../docs/python_collections_complexity.md) – Set-Mitgliedschaft
+- [`../tests/test_linked_lists.py`](../tests/test_linked_lists.py) – automatisierte Tests
