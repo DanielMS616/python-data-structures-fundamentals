@@ -138,8 +138,10 @@ from pythonds3.basic import Stack
 
 Installation:
 
+Install the repository's runtime dependencies from the project root:
+
 ```bash
-python3 -m pip install -U pythonds3
+python3 -m pip install -r requirements.txt
 ```
 
 Damit liegt der Fokus in den Übungen auf dem Algorithmus und nicht jedes Mal auf einer neuen Stack-Implementierung.
