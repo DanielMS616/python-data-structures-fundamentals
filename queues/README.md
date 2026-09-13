@@ -385,19 +385,21 @@ direkter Indexzugriff statt wiederholtem pop(0)
 
 Hinweis:
 
-Der Startercode verwendet den Namen:
+Der ursprüngliche Startercode verwendete den Namen:
+
+```text
+ReversableQueue
+```
+
+Für die öffentliche Referenzversion wurde die Schreibweise auf das übliche englische:
 
 ```text
 ReversibleQueue
 ```
 
-Die übliche englische Schreibweise wäre:
+korrigiert.
 
-```text
-ReversibleQueue
-```
-
-Der verwendete Name bleibt in der Übung bestehen, damit Code und begleitende Erklärung konsistent bleiben.
+Der ursprüngliche Lernstand bleibt über die Git-Historie nachvollziehbar. Weitere Details stehen in [`reversible_queue_explanation.md`](reversible_queue_explanation.md).
 
 ---
 

@@ -83,6 +83,22 @@ elif closing_symbol:
         return False
 ```
 
+Nach dem vollständigen Durchlauf muss zusätzlich geprüft werden, ob noch offene Elemente übrig sind:
+
+```python
+return stack.is_empty()
+```
+
+Damit werden beide grundlegenden Fehlerarten erkannt:
+
+```text
+Schließer ohne vorherigen Öffner
+→ sofort False
+
+Öffner bleiben am Ende übrig
+→ False
+```
+
 ### Im Repository
 
 - `stacks/par_checker.py`
@@ -234,6 +250,30 @@ if self.head is None:
     self.head = new_node
     self.tail = new_node
     return
+```
+
+Danach kann direkt über `tail` angehängt werden:
+
+```python
+assert self.tail is not None
+
+self.tail.next = new_node
+self.tail = new_node
+```
+
+Wichtige Invarianten:
+
+```text
+leere Liste:
+head is None
+tail is None
+
+ein Node:
+head is tail
+
+nicht leere Liste:
+tail zeigt auf den letzten Node
+tail.next is None
 ```
 
 ### Nutzen

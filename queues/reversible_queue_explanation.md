@@ -642,26 +642,6 @@ Die Wahl der Operationen ist deshalb genauso wichtig wie die grobe algorithmisch
 
 ---
 
-## Warum die Klasse `ReversibleQueue` heißt
-
-Der vorgegebene Klassenname lautet:
-
-```python
-ReversibleQueue
-```
-
-Die üblichere englische Schreibweise wäre:
-
-```python
-ReversibleQueue
-```
-
-Der Name bleibt in diesem Lernbeispiel bewusst erhalten, damit die Implementierung mit der ursprünglichen Übungsstruktur konsistent bleibt.
-
-In neuem produktivem Code würde man die korrekte Schreibweise bevorzugen.
-
----
-
 ## Zentrale Lernidee
 
 Die zentrale Erkenntnis lautet:
