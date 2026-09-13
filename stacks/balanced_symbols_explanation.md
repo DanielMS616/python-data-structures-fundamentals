@@ -2,15 +2,9 @@
 
 ## Ziel der Übung
 
-Die Funktion
+Die Funktion soll mehrere Klammerarten verarbeiten und prüfen, ob sie vollständig und in der richtigen Reihenfolge verschachtelt sind.
 
-```python
-balanced_symbols(symbol_string)
-```
-
-soll mehrere Klammerarten verarbeiten und prüfen, ob sie vollständig sowie in der richtigen Verschachtelungsreihenfolge geschlossen werden.
-
-Verwendet werden:
+Unterstützt werden:
 
 ```text
 ( )
@@ -18,48 +12,42 @@ Verwendet werden:
 { }
 ```
 
-Beispiele für korrekt ausgeglichene Symbolketten:
+Beispiele:
 
 ```text
-{{([][])}()}
-[[{{(())}}]]
-[][][](){}
+[[()]]      -> True
+[][][]()    -> True
+([)]        -> False
+((()])      -> False
 ```
 
-Beispiele für ungültige Symbolketten:
+Die allgemeinen Eigenschaften eines Stacks und das LIFO-Prinzip sind in [`README.md`](README.md) zusammengefasst.
 
-```text
-([)]
-((()]))
-[{()]
-```
-
-Die Funktion soll:
-
-```python
-True
-```
-
-zurückgeben, wenn alle Symbole korrekt zusammenpassen, und:
-
-```python
-False
-```
-
-wenn eine Klammer fehlt, zu früh geschlossen wird oder der falsche Klammer-Typ verwendet wird.
+Diese Erklärung konzentriert sich auf die **Erweiterung gegenüber der einfachen Klammerprüfung**: Jetzt muss nicht nur erkannt werden, ob ein Öffner existiert, sondern auch, ob er zum aktuellen Schließer gehört.
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Datenstruktur | Stack + Dictionary |
+| Muster | Stack für Verschachtelung + Lookup-Tabelle |
+| Laufzeit | `O(n)` |
+| Zusatzspeicher | Worst Case `O(n)` |
+| Kernidee | Der aktuelle Schließer muss zum zuletzt geöffneten Symbol passen |
+| Wichtiges Beispiel | `([)]` ist trotz korrekter Anzahl ungültig |
+
+---
+
+## Relevante Implementierung
+
+Der entscheidende Teil der aktuellen Lösung ist:
 
 ```python
-from pythonds3.basic import Stack
-
-
-def balanced_symbols(symbol_string):
+def balanced_symbols(symbol_string: str) -> bool:
     stack = Stack()
 
-    # Map each closing symbol to its matching opening symbol.
     matching_symbols = {
         ")": "(",
         "]": "[",
@@ -71,164 +59,81 @@ def balanced_symbols(symbol_string):
             stack.push(symbol)
 
         elif symbol in ")]}":
-            # A closing symbol without an opener is always invalid.
             if stack.is_empty():
                 return False
 
-            # The most recently opened symbol must match this closer.
             if stack.pop() != matching_symbols[symbol]:
                 return False
 
-    # Balanced only if no unmatched opening symbols remain.
     return stack.is_empty()
-
-
-# Test
-print("The code should pass the following tests:")
-print(balanced_symbols(""))
-print(balanced_symbols("[[()]]"))
-print(balanced_symbols("[][][]()"))
-print(balanced_symbols("([)]"))
-print(balanced_symbols("((()])"))
-print(balanced_symbols("[{(]"))
 ```
 
-Erwartete Ergebnisse:
-
-```text
-True
-True
-True
-False
-False
-False
-```
+Die vollständige und aktuelle Implementierung befindet sich in [`balanced_symbols.py`](balanced_symbols.py).
 
 ---
 
-# 1. Verbindung zur vorherigen Aufgabe
+## Weiterentwicklung gegenüber `par_checker()`
 
-In der vorherigen Übung haben wir nur eine Klammerart geprüft:
+Bei der einfachen Klammerprüfung existiert nur:
 
 ```text
 ( )
 ```
 
-Dort reichte es aus, jede öffnende Klammer auf einen Stack zu legen und bei jeder schließenden Klammer wieder eine zu entfernen.
+Dort reicht es bei einem Schließer zu prüfen:
 
-Mit mehreren Klammerarten reicht das nicht mehr.
+```text
+Ist überhaupt ein Öffner vorhanden?
+```
 
-Bei:
+und anschließend:
+
+```python
+stack.pop()
+```
+
+Bei mehreren Symboltypen reicht das nicht mehr.
+
+Beispiel:
 
 ```text
 ([)]
 ```
 
-ist die Anzahl der öffnenden und schließenden Symbole zwar korrekt.
+Die Anzahl aller Öffner und Schließer stimmt.
 
 Trotzdem ist die Verschachtelung falsch.
 
-Die innere eckige Klammer:
+Nach:
 
 ```text
+(
 [
 ```
 
-müsste zuerst durch:
+liegt `[` oben auf dem Stack.
 
-```text
-]
-```
-
-geschlossen werden.
-
-Stattdessen erscheint:
+Als Nächstes erscheint aber:
 
 ```text
 )
 ```
 
-Deshalb müssen wir jetzt zusätzlich prüfen, **welcher Typ von Symbol zuletzt geöffnet wurde**.
+Der zuletzt geöffnete Typ passt also nicht zum aktuellen Schließer.
+
+Die neue Aufgabe lautet deshalb:
+
+```text
+Existiert ein offenes Symbol?
++
+Ist es vom richtigen Typ?
+```
 
 ---
 
-# 2. Warum eignet sich ein Stack besonders gut?
+## Das Dictionary `matching_symbols`
 
-Ein Stack arbeitet nach:
-
-> **LIFO – Last In, First Out**
-
-Das zuletzt geöffnete Symbol muss bei korrekt verschachtelten Klammern auch zuerst wieder geschlossen werden.
-
-Beispiel:
-
-```text
-{ [ ( ) ] }
-```
-
-Die öffnenden Symbole werden nacheinander gespeichert:
-
-```text
-{
-[
-(
-```
-
-Der Stack sieht dann gedanklich so aus:
-
-```text
-oben
- ↓
-[(]
-[[]
-[{]
-```
-
-Als erstes muss nun:
-
-```text
-)
-```
-
-kommen, weil oben auf dem Stack:
-
-```text
-(
-```
-
-liegt.
-
-Danach:
-
-```text
-]
-```
-
-für:
-
-```text
-[
-```
-
-und zuletzt:
-
-```text
-}
-```
-
-für:
-
-```text
-{
-```
-
-Genau dieses Verhalten bildet ein Stack automatisch ab.
-
----
-
-# 3. Das Dictionary `matching_symbols`
-
-Der wichtigste neue Teil gegenüber der einfachen Klammerprüfung ist:
+Die Zuordnung:
 
 ```python
 matching_symbols = {
@@ -238,9 +143,9 @@ matching_symbols = {
 }
 ```
 
-Das Dictionary beantwortet die Frage:
+beantwortet für jeden Schließer direkt die Frage:
 
-> Welches öffnende Symbol gehört zu diesem schließenden Symbol?
+> Welcher Öffner wird an dieser Stelle erwartet?
 
 Beispiele:
 
@@ -248,7 +153,7 @@ Beispiele:
 matching_symbols[")"]
 ```
 
-ergibt:
+liefert:
 
 ```text
 (
@@ -260,56 +165,58 @@ und:
 matching_symbols["]"]
 ```
 
-ergibt:
+liefert:
 
 ```text
 [
 ```
 
-Damit müssen wir keine lange Folge von einzelnen Vergleichen schreiben.
+Damit ist die Zuordnungsregel explizit als Datenstruktur modelliert und muss nicht durch mehrere verschachtelte `if`-Bedingungen ausgedrückt werden.
 
 ---
 
-# 4. Öffnende Symbole speichern
+## Schritt für Schritt
+
+### 1. Öffnende Symbole speichern
 
 ```python
 if symbol in "([{":
     stack.push(symbol)
 ```
 
-Wenn das aktuelle Zeichen eines dieser Symbole ist:
+Jedes öffnende Symbol wird auf den Stack gelegt.
+
+Beispiel:
 
 ```text
-(
-[
-{
+{[(
 ```
 
-wird es auf den Stack gelegt.
+führt gedanklich zu:
 
-Es wartet dort auf sein späteres schließendes Gegenstück.
+```text
+Top
+ ↓
+[(]
+[[]
+[{]
+```
+
+Das oberste Element ist immer das **zuletzt geöffnete Symbol**.
 
 ---
 
-# 5. Schließende Symbole behandeln
+### 2. Schließendes Symbol erkennen
 
 ```python
 elif symbol in ")]}":
 ```
 
-Bei:
-
-```text
-)
-]
-}
-```
-
-müssen zwei Dinge geprüft werden.
+Bei einem Schließer sind zwei Prüfungen notwendig.
 
 ---
 
-## Prüfung 1: Gibt es überhaupt ein offenes Symbol?
+### 3. Prüfen, ob überhaupt ein Öffner existiert
 
 ```python
 if stack.is_empty():
@@ -324,95 +231,88 @@ Beispiel:
 
 Der Stack ist leer.
 
-Es wurde vorher keine:
+Es wurde vorher kein `[` geöffnet.
 
-```text
-[
-```
-
-geöffnet.
-
-Damit ist die Zeichenkette sofort ungültig.
-
-Wir können direkt:
-
-```python
-False
-```
-
-zurückgeben.
+Die Eingabe ist damit sofort ungültig.
 
 ---
 
-## Prüfung 2: Ist es der richtige Symboltyp?
+### 4. Passenden Symboltyp prüfen
 
 ```python
 if stack.pop() != matching_symbols[symbol]:
     return False
 ```
 
-Hier passiert etwas Wichtiges.
+Hier werden zwei Werte verglichen:
 
-`stack.pop()` liefert das **zuletzt geöffnete Symbol**.
+```text
+stack.pop()
+→ zuletzt geöffneter Symboltyp
 
-`matching_symbols[symbol]` liefert das Symbol, das wir für den aktuellen Schließer erwarten.
+matching_symbols[symbol]
+→ für den aktuellen Schließer erwarteter Öffner
+```
+
+Nur wenn beide übereinstimmen, ist dieser Teil der Verschachtelung korrekt.
+
+---
+
+### 5. Am Ende auf verbleibende Öffner prüfen
+
+```python
+return stack.is_empty()
+```
+
+Auch wenn während des Durchlaufs kein falscher Schließer gefunden wurde, können noch offene Symbole übrig bleiben.
 
 Beispiel:
 
 ```text
-([)]
+[{(
 ```
 
-Nach:
-
-```text
-(
-[
-```
-
-liegt oben auf dem Stack:
-
-```text
-[
-```
-
-Jetzt erscheint:
-
-```text
-)
-```
-
-Das Dictionary sagt:
-
-```python
-matching_symbols[")"]
-```
-
-ergibt:
-
-```text
-(
-```
-
-Wir vergleichen also:
-
-```text
-[ != (
-```
-
-Das stimmt nicht.
+Der Stack ist am Ende nicht leer.
 
 Ergebnis:
 
-```python
+```text
 False
 ```
 
-Genau dadurch erkennen wir falsche Verschachtelung.
+---
+
+## Warum diese Lösung funktioniert
+
+Die zentrale Invariante lautet:
+
+> Der Stack enthält jederzeit genau die geöffneten Symbole, die noch nicht geschlossen wurden – in ihrer Öffnungsreihenfolge.
+
+Da ein Stack nach LIFO arbeitet, steht oben immer das Symbol, das **als Nächstes geschlossen werden muss**.
+
+Bei:
+
+```text
+{ [ ( ) ] }
+```
+
+geschieht deshalb logisch:
+
+```text
+öffnen {
+öffnen [
+öffnen (
+
+schließen ) -> muss zu ( passen
+schließen ] -> muss zu [ passen
+schließen } -> muss zu { passen
+```
+
+Genau diese Verschachtelungsregel wird durch Stack + Lookup-Tabelle direkt modelliert.
 
 ---
 
-# 6. Warum ist `([)]` ungültig?
+## Zentrales Gegenbeispiel: `([)]`
 
 Schritt für Schritt:
 
@@ -424,15 +324,31 @@ Zeichen    Aktion                 Stack
 )          erwartet (, findet [   Fehler
 ```
 
-Ob später noch ein `]` erscheint, spielt keine Rolle.
+Beim `)` gilt:
 
-Die Verschachtelung ist bereits ungültig.
+```python
+matching_symbols[")"] == "("
+```
+
+Oben auf dem Stack liegt aber:
+
+```text
+[
+```
+
+Damit:
+
+```text
+[ != (
+```
+
+Der Ausdruck ist sofort ungültig.
+
+Dass später noch `]` erscheint, kann die falsche Verschachtelung nicht mehr reparieren.
 
 ---
 
-# 7. Beispiel `[[()]]`
-
-Schritt für Schritt:
+## Gültiges Beispiel: `[[()]]`
 
 ```text
 Zeichen    Aktion          Stack
@@ -457,57 +373,13 @@ liefert:
 True
 ```
 
-Die Zeichenkette ist korrekt ausgeglichen.
+Die Symbolkette ist korrekt verschachtelt.
 
 ---
 
-# 8. Warum prüfen wir am Ende noch den Stack?
+## Warum bloßes Zählen nicht reicht
 
-Auch wenn während des Durchlaufens kein falscher Schließer gefunden wurde, können noch offene Symbole übrig bleiben.
-
-Beispiel:
-
-```text
-[{(
-```
-
-Alle drei Zeichen sind gültige öffnende Symbole.
-
-Aber keines wurde geschlossen.
-
-Der Stack enthält am Ende noch:
-
-```text
-[
-    "{",
-    "[",
-    "("
-]
-```
-
-Deshalb:
-
-```python
-return stack.is_empty()
-```
-
-Wenn der Stack leer ist:
-
-```text
-True
-```
-
-Wenn noch offene Symbole übrig sind:
-
-```text
-False
-```
-
----
-
-# 9. Warum reicht bloßes Zählen nicht?
-
-Eine naive Lösung könnte prüfen:
+Eine naive Prüfung könnte vergleichen:
 
 ```text
 Anzahl ( == Anzahl )
@@ -515,91 +387,118 @@ Anzahl [ == Anzahl ]
 Anzahl { == Anzahl }
 ```
 
-Das würde aber diesen Fehler nicht erkennen:
+Das erkennt jedoch:
 
 ```text
 ([)]
 ```
 
-Die Anzahl jeder Symbolart stimmt.
+nicht als Fehler.
 
-Trotzdem ist die Reihenfolge falsch.
+Die Häufigkeit jeder Symbolart stimmt.
 
-Deshalb brauchen wir eine Datenstruktur, die zusätzlich speichert, **in welcher Reihenfolge die Symbole geöffnet wurden**.
+Falsch ist die **Reihenfolge der Schließvorgänge**.
 
-Genau dafür ist der Stack geeignet.
+Der Stack speichert genau diese Reihenfolge und macht deshalb die strukturelle Prüfung möglich.
 
 ---
 
-# 10. Laufzeitkomplexität
+## Warum das Dictionary eine gute Designentscheidung ist
 
-Sei `n` die Anzahl der Zeichen in `symbol_string`.
+Man könnte die Zuordnung auch mit mehreren Bedingungen ausdrücken:
 
-Wir durchlaufen den String genau einmal:
+```python
+if symbol == ")" and opening_symbol != "(":
+    return False
+elif symbol == "]" and opening_symbol != "[":
+    return False
+elif symbol == "}" and opening_symbol != "{":
+    return False
+```
+
+Das funktioniert, verteilt die Paarungsregel aber über mehrere Codezweige.
+
+Mit:
+
+```python
+matching_symbols = {
+    ")": "(",
+    "]": "[",
+    "}": "{",
+}
+```
+
+wird die Regel direkt sichtbar:
+
+```text
+Schließer -> erwarteter Öffner
+```
+
+Vorteile:
+
+```text
+kompakter
+leichter lesbar
+leichter erweiterbar
+Zuordnung zentral definiert
+```
+
+Der Dictionary-Zugriff ist im Durchschnitt:
+
+```text
+O(1)
+```
+
+---
+
+## Komplexität
+
+Sei `n` die Länge von `symbol_string`.
+
+### Laufzeit
+
+Die Eingabe wird einmal durchlaufen:
 
 ```python
 for symbol in symbol_string:
 ```
 
-Jedes Zeichen wird einmal betrachtet.
-
-Die Stack-Operationen:
-
-```python
-push()
-pop()
-is_empty()
-```
-
-werden als:
+Pro relevantem Zeichen erfolgen nur konstante Operationen:
 
 ```text
-O(1)
+Stack push/pop/is_empty -> O(1)
+Dictionary-Lookup       -> durchschnittlich O(1)
 ```
 
-betrachtet.
-
-Auch der Zugriff auf das Dictionary:
-
-```python
-matching_symbols[symbol]
-```
-
-ist im Durchschnitt:
-
-```text
-O(1)
-```
-
-Damit ergibt sich insgesamt:
+Damit beträgt die gesamte Laufzeit:
 
 ```text
 O(n)
 ```
 
----
+### Speicher
 
-# 11. Speicherkomplexität
-
-Im Worst Case besteht der String nur aus öffnenden Symbolen:
+Im Worst Case besteht die Eingabe nur aus öffnenden Symbolen:
 
 ```text
 (([[{{
 ```
 
-Dann landen alle `n` Symbole auf dem Stack.
+Dann werden bis zu `n` Symbole auf dem Stack gespeichert.
 
-Der zusätzliche Speicherbedarf beträgt deshalb:
+Der zusätzliche Speicherbedarf beträgt:
 
 ```text
 O(n)
 ```
 
+Das Dictionary selbst besitzt für diese Aufgabe eine konstante Größe und verändert die asymptotische Speicherkomplexität nicht.
+
 ---
 
-# 12. Sonderfälle
+## Rand- und Fehlerfälle
 
-## Leerer String
+### Leerer String
 
 ```python
 balanced_symbols("")
@@ -609,35 +508,21 @@ Es wird kein Symbol verarbeitet.
 
 Der Stack bleibt leer.
 
-Damit:
-
-```python
-stack.is_empty()
-```
-
-ergibt:
+Ergebnis:
 
 ```text
 True
 ```
 
-Ein leerer String gilt also als ausgeglichen.
-
 ---
 
-## Nur ein öffnendes Symbol
+### Nur ein öffnendes Symbol
 
 ```python
 balanced_symbols("(")
 ```
 
-Am Ende liegt noch:
-
-```text
-(
-```
-
-auf dem Stack.
+Am Ende liegt noch ein Öffner auf dem Stack.
 
 Ergebnis:
 
@@ -647,13 +532,13 @@ False
 
 ---
 
-## Nur ein schließendes Symbol
+### Nur ein schließendes Symbol
 
 ```python
 balanced_symbols("]")
 ```
 
-Der Stack ist beim Auftreten des Symbols leer.
+Der Stack ist beim Auftreten des Schließers leer.
 
 Ergebnis sofort:
 
@@ -663,7 +548,39 @@ False
 
 ---
 
-# 13. Was passiert mit anderen Zeichen?
+### Falscher Symboltyp
+
+```python
+balanced_symbols("([)]")
+```
+
+Ein Öffner existiert, aber nicht vom erwarteten Typ.
+
+Ergebnis:
+
+```text
+False
+```
+
+---
+
+### Offene Symbole bleiben übrig
+
+```python
+balanced_symbols("[{(")
+```
+
+Es tritt kein falscher Schließer auf, aber am Ende ist der Stack nicht leer.
+
+Ergebnis:
+
+```text
+False
+```
+
+---
+
+## Andere Zeichen und Eingabevalidierung
 
 Der aktuelle Algorithmus reagiert nur auf:
 
@@ -679,190 +596,143 @@ Zum Beispiel:
 balanced_symbols("result = [a + (b * c)]")
 ```
 
-würde nur die darin enthaltenen Klammern prüfen.
+prüft nur die enthaltenen Klammern.
 
-Das kann für echten Programmcode sogar sinnvoll sein.
+Das kann für echten Programmtext sogar sinnvoll sein.
 
-Für eine reine Symbolketten-Aufgabe könnte man alternativ verlangen, dass ausschließlich Klammerzeichen erlaubt sind.
+Eine strengere Schnittstelle könnte dagegen ausschließlich Klammerzeichen erlauben.
 
-Welche Variante korrekt ist, hängt von der gewünschten Schnittstelle ab.
-
-Das ist eine typische **Eingabevalidierungs- und Designentscheidung**.
+Welche Variante richtig ist, hängt vom gewünschten Vertrag ab und ist eine **Input-Validation-Entscheidung**.
 
 ---
 
-# 14. Warum das Dictionary eine gute Designentscheidung ist
+## Typvertrag
 
-Man könnte auch so programmieren:
+Die aktuelle Signatur lautet:
 
 ```python
-if symbol == ")" and opening_symbol != "(":
-    return False
-elif symbol == "]" and opening_symbol != "[":
-    return False
-elif symbol == "}" and opening_symbol != "{":
-    return False
+def balanced_symbols(symbol_string: str) -> bool:
 ```
 
-Das funktioniert.
-
-Das Dictionary:
-
-```python
-matching_symbols = {
-    ")": "(",
-    "]": "[",
-    "}": "{",
-}
-```
-
-ist aber kompakter und leichter erweiterbar.
-
-Wenn später eine weitere Symbolart hinzukäme, müsste hauptsächlich die Zuordnung ergänzt werden.
-
-Die Regel:
+Damit wird die erwartete Schnittstelle dokumentiert:
 
 ```text
-Schließer -> erwarteter Öffner
+str -> bool
 ```
 
-ist außerdem direkt in der Datenstruktur sichtbar.
+Type Hints erzwingen diese Bedingung zur Laufzeit nicht automatisch.
+
+Für die aktuelle Lernübung ist zusätzliche Typvalidierung nicht notwendig.
 
 ---
 
-# 15. Fehlerfälle und Robustheit
+## Tests
 
-Der Algorithmus erkennt drei zentrale Fehlerarten:
-
-### 1. Schließendes Symbol ohne Öffner
+Zu den ursprünglichen Lernfällen gehören unter anderem:
 
 ```text
-]
+""          -> True
+[[()]]      -> True
+[][][]()    -> True
+([)]        -> False
+((()])      -> False
+[{(]        -> False
 ```
 
-Ergebnis:
+Die Implementierung wird inzwischen zusätzlich automatisiert mit `pytest` geprüft:
+
+[`../tests/test_stacks.py`](../tests/test_stacks.py)
+
+Dort werden unter anderem getestet:
 
 ```text
-False
+korrekt verschachtelte Symbole
+falsche Verschachtelung
+leere Eingabe
 ```
-
-### 2. Falscher Symboltyp
-
-```text
-([)]
-```
-
-Ergebnis:
-
-```text
-False
-```
-
-### 3. Offene Symbole bleiben übrig
-
-```text
-[{(
-```
-
-Ergebnis:
-
-```text
-False
-```
-
-Damit sind die wesentlichen strukturellen Fehlerfälle der Aufgabe abgedeckt.
 
 ---
 
-# 16. Skalierungs- und Designgedanke
+## Design- und Skalierungsgedanke
 
-Der Algorithmus ist effizient, weil der String nur einmal durchlaufen wird.
+Der Algorithmus verarbeitet die Eingabe in einem einzigen Durchlauf.
 
-Wir müssen weder:
-
-- Zeichen mehrfach suchen,
-- Teilstrings erzeugen,
-- noch immer wieder von vorne beginnen.
-
-Bei doppelt so vielen Zeichen wächst die Arbeit ungefähr ebenfalls auf das Doppelte.
-
-Das entspricht:
+Es sind keine wiederholten Suchen oder Teilstring-Operationen notwendig.
 
 ```text
+n Zeichen
+×
+konstante Arbeit pro Zeichen
+=
 O(n)
 ```
 
-Der Stack speichert nur die Symbole, die noch auf ein passendes Gegenstück warten.
+Der Stack enthält außerdem nur Informationen, die für zukünftige Entscheidungen noch relevant sind:
 
-Damit ist die Datenstruktur direkt auf das Problem zugeschnitten.
+```text
+Welche Symbole sind aktuell noch offen?
+```
+
+Das Dictionary trennt zusätzlich die **Paarungsregeln** von der eigentlichen Kontrolllogik.
+
+Diese Aufteilung:
+
+```text
+Stack
+→ Reihenfolge und Zustand
+
+Dictionary
+→ Zuordnung der Symboltypen
+```
+
+macht die Lösung sowohl algorithmisch klar als auch gut erweiterbar.
 
 ---
 
-# 17. Unterschied zur vorherigen Aufgabe
+## Unterschied zu `par_checker()`
 
-Bei `par_checker()` reichte:
+Bei [`par_checker()`](par_checker_explanation.md) reicht die Frage:
 
-```python
-stack.pop()
-```
+> Gibt es für diesen Schließer überhaupt einen offenen Vorgänger?
 
-weil es nur eine einzige Klammerart gab.
+Bei `balanced_symbols()` kommt eine zweite Bedingung hinzu:
 
-Hier müssen wir zusätzlich prüfen:
+> Ist der zuletzt geöffnete Symboltyp genau derjenige, den dieser Schließer erwartet?
+
+Der entscheidende zusätzliche Vergleich lautet:
 
 ```python
 stack.pop() == matching_symbols[symbol]
 ```
 
-Das ist der entscheidende neue Schritt.
-
-Wir prüfen jetzt nicht nur:
-
-> Gibt es überhaupt eine offene Klammer?
-
-sondern zusätzlich:
-
-> Ist die zuletzt geöffnete Klammer genau diejenige, die jetzt geschlossen werden darf?
+Damit entwickelt sich aus der einfachen Klammerprüfung eine echte Prüfung verschachtelter Symboltypen.
 
 ---
 
-# Zusammenfassung
+## Zentrale Lernidee
 
-Die Funktion kombiniert zwei wichtige Werkzeuge:
+Die zentrale Erkenntnis lautet:
 
-## Stack
+> **Bei korrekt verschachtelten Symbolen muss immer das zuletzt geöffnete Symbol als Nächstes passend geschlossen werden.**
 
-Speichert die Reihenfolge der offenen Symbole nach dem LIFO-Prinzip.
+Der Stack modelliert die Reihenfolge der offenen Symbole.
 
-## Dictionary
+Das Dictionary modelliert, welche Typen zusammengehören.
 
-Speichert die korrekten Symbolpaare:
-
-```text
-) -> (
-] -> [
-} -> {
-```
-
-Bei jedem schließenden Symbol prüfen wir:
-
-1. Ist überhaupt ein offenes Symbol vorhanden?
-2. Ist das zuletzt geöffnete Symbol vom richtigen Typ?
-
-Am Ende darf nichts mehr auf dem Stack liegen.
-
-Die Laufzeit beträgt:
+Gemeinsam ermöglichen beide Strukturen eine vollständige Prüfung in:
 
 ```text
 O(n)
 ```
 
-und der zusätzliche Speicherbedarf im Worst Case:
+Zeit.
 
-```text
-O(n)
-```
+---
 
-Die zentrale Lernidee lautet:
+## Weiterführend
 
-> **Bei korrekt verschachtelten Symbolen muss immer das zuletzt geöffnete Symbol als Nächstes passend geschlossen werden – genau dieses Verhalten bildet ein Stack mit LIFO ab.**
+- [`README.md`](README.md) – Stack, LIFO und grundlegende Operationen
+- [`par_checker_explanation.md`](par_checker_explanation.md) – einfachere Variante mit nur einer Klammerart
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – Stack für verschachtelte Strukturen und Lookup-Muster
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – Analyse von Zeit- und Speicherkomplexität
+- [`../tests/test_stacks.py`](../tests/test_stacks.py) – automatisierte Tests

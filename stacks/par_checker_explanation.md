@@ -2,91 +2,82 @@
 
 ## Ziel der Übung
 
-Ziel ist ein Algorithmus, der eine Folge runder Klammern von links nach rechts auswertet und erkennt, ob Öffnen und Schließen korrekt ausgeglichen sind.
-
-Die Funktion
+Ziel ist eine Funktion, die eine Folge runder Klammern von links nach rechts auswertet und erkennt, ob Öffnen und Schließen korrekt ausgeglichen sind.
 
 ```python
-par_checker(symbol_string)
+par_checker("((()))")
 ```
 
-soll
+soll:
 
-```python
+```text
 True
 ```
 
-zurückgeben, wenn jede öffnende Klammer `(` eine passende schließende Klammer `)` besitzt und die Reihenfolge korrekt ist.
-
-Andernfalls soll die Funktion
+liefern, während beispielsweise:
 
 ```python
+par_checker(")(")
+```
+
+zu:
+
+```text
 False
 ```
 
-zurückgeben.
+führen muss.
 
-Beispiele:
+Die allgemeinen Eigenschaften eines Stacks, das LIFO-Prinzip und typische Stack-Operationen sind in [`README.md`](README.md) zusammengefasst.
 
-```text
-((()))      -> True
-((()()))    -> True
-(()         -> False
-)(          -> False
-```
+Hier liegt der Fokus auf der **konkreten algorithmischen Idee dieser Übung**: Noch nicht geschlossene Klammern werden als offener Zustand auf dem Stack verwaltet.
 
 ---
 
-## Implementierung
+## Quick Summary
+
+| Aspekt | Ergebnis |
+| --- | --- |
+| Datenstruktur | Stack |
+| Muster | Stack für offene Zustände |
+| Laufzeit | `O(n)` |
+| Zusatzspeicher | Worst Case `O(n)` |
+| Kernidee | Jeder Schließer benötigt eine zuvor gespeicherte öffnende Klammer |
+| Wichtiger Fehlerfall | Eine schließende Klammer darf niemals erscheinen, wenn der Stack leer ist |
+
+---
+
+## Relevante Implementierung
+
+Der entscheidende Teil der aktuellen Lösung ist:
 
 ```python
-from pythonds3.basic import Stack
-
-
-def par_checker(symbol_string):
+def par_checker(symbol_string: str) -> bool:
     stack = Stack()
 
-    # Opening parentheses wait on the stack for a matching closing one.
     for symbol in symbol_string:
         if symbol == "(":
             stack.push(symbol)
 
         elif symbol == ")":
-            # A closing parenthesis without an opener makes the string invalid.
             if stack.is_empty():
                 return False
 
             stack.pop()
 
-    # Balanced only if no unmatched opening parentheses remain.
     return stack.is_empty()
-
-
-# Test
-print("The code should pass the following tests:")
-print(f"((())): {par_checker('((()))')}")
-print(f"((()())): {par_checker('((()()))')}")
-print(f"((): {par_checker('(()')}")
-print(f")(: {par_checker(')(')}")
 ```
 
-Erwartete Ausgabe:
-
-```text
-((())): True
-((()())): True
-((): False
-)(: False
-```
+Die vollständige und aktuelle Implementierung befindet sich in [`par_checker.py`](par_checker.py).
 
 ---
 
-## 1. Was bedeutet „ausgeglichene Klammern“?
+## Was bedeutet „ausgeglichen“?
 
-Eine Klammerkette ist ausgeglichen, wenn zwei Bedingungen erfüllt sind:
+Für diese Aufgabe müssen zwei Bedingungen gleichzeitig erfüllt sein:
 
-1. Jede schließende Klammer `)` besitzt vorher eine passende öffnende Klammer `(`.
-2. Am Ende bleibt keine öffnende Klammer übrig.
+1. Jede schließende Klammer `)` benötigt eine zuvor geöffnete Klammer `(`.
+2. Nach dem vollständigen Durchlaufen darf keine öffnende Klammer übrig bleiben.
 
 Beispiel:
 
@@ -94,15 +85,15 @@ Beispiel:
 ((()))
 ```
 
-Hier kann jede schließende Klammer einer zuvor geöffneten Klammer zugeordnet werden.
+ist gültig.
 
-Dagegen:
+Dagegen ist:
 
 ```text
 (()
 ```
 
-ist nicht ausgeglichen, weil am Ende noch eine öffnende Klammer übrig bleibt.
+ungültig, weil am Ende noch eine öffnende Klammer übrig bleibt.
 
 Auch:
 
@@ -110,67 +101,37 @@ Auch:
 )(
 ```
 
-ist nicht ausgeglichen.
+ist ungültig.
 
-Obwohl insgesamt eine öffnende und eine schließende Klammer vorhanden sind, kommt die schließende Klammer **zu früh**.
+Obwohl beide Klammerarten genau einmal vorkommen, erscheint die schließende Klammer **zu früh**.
 
-Die Reihenfolge ist also genauso wichtig wie die Anzahl.
+Damit ist klar:
 
----
-
-## 2. Warum eignet sich ein Stack?
-
-Ein Stack arbeitet nach dem Prinzip:
-
-> **LIFO – Last In, First Out**
-
-Das zuletzt eingefügte Element wird zuerst wieder entfernt.
-
-Bei verschachtelten Klammern passt genau dieses Verhalten.
-
-Beispiel:
-
-```text
-((()))
-```
-
-Die drei öffnenden Klammern werden nacheinander auf den Stack gelegt:
-
-```text
-oben
- ↓
-[(]
-[(]
-[(]
-```
-
-Sobald eine schließende Klammer `)` erscheint, wird die zuletzt geöffnete Klammer wieder vom Stack entfernt.
-
-Damit behandelt der Stack automatisch die innerste offene Klammer zuerst.
+> Nicht nur die Anzahl der Klammern ist relevant, sondern auch ihre Reihenfolge.
 
 ---
 
-## 3. Schritt für Schritt durch den Code
+## Schritt für Schritt
 
-### Stack erzeugen
+### 1. Leeren Stack erzeugen
 
 ```python
 stack = Stack()
 ```
 
-Zu Beginn ist noch keine öffnende Klammer vorhanden.
+Zu Beginn gibt es noch keine ungepaarte öffnende Klammer.
 
 Der Stack ist deshalb leer.
 
 ---
 
-### String von links nach rechts lesen
+### 2. Eingabe von links nach rechts lesen
 
 ```python
 for symbol in symbol_string:
 ```
 
-Der Algorithmus betrachtet jedes Zeichen genau einmal.
+Jedes Zeichen wird genau einmal betrachtet.
 
 Bei:
 
@@ -189,80 +150,64 @@ werden nacheinander gelesen:
 
 ---
 
-## 4. Öffnende Klammer
+### 3. Öffnende Klammern speichern
 
 ```python
 if symbol == "(":
     stack.push(symbol)
 ```
 
-Jede öffnende Klammer wird auf den Stack gelegt.
+Jede `(` wird auf den Stack gelegt.
 
-Sie wartet dort auf eine passende schließende Klammer.
+Sie repräsentiert eine Klammer, die noch auf ihr passendes `)` wartet.
 
-Beispiel:
+Nach:
 
 ```text
 ((
 ```
 
-führt zu:
+sieht der Stack gedanklich so aus:
 
 ```text
-Stack:
-
-oben
+Top
  ↓
 [(]
 [(]
 ```
 
-Es gibt also zwei noch nicht geschlossene Klammern.
+Es existieren also zwei noch nicht geschlossene Klammern.
 
 ---
 
-## 5. Schließende Klammer
-
-Bei:
+### 4. Schließende Klammern verarbeiten
 
 ```python
 elif symbol == ")":
 ```
 
-muss geprüft werden, ob überhaupt eine passende öffnende Klammer vorhanden ist.
-
-### Fehlerfall: Stack ist leer
+Bei einer schließenden Klammer muss zunächst geprüft werden, ob überhaupt eine offene Klammer vorhanden ist.
 
 ```python
 if stack.is_empty():
     return False
 ```
 
-Angenommen, der String beginnt mit:
+Beginnt die Eingabe zum Beispiel mit:
 
 ```text
 )
 ```
 
-Dann wurde vorher keine öffnende Klammer gespeichert.
+ist der Stack leer.
 
-Die schließende Klammer kann also zu nichts gehören.
+Es existiert keine passende `(`.
 
-Der String ist sofort ungültig.
-
-Deshalb können wir direkt:
-
-```python
-return False
-```
-
-ausführen.
-
-Wir müssen den restlichen String nicht mehr prüfen.
+Der Ausdruck ist damit sofort ungültig.
 
 ---
 
-## 6. Passende öffnende Klammer entfernen
+### 5. Passende offene Klammer entfernen
 
 Wenn der Stack nicht leer ist:
 
@@ -272,92 +217,74 @@ stack.pop()
 
 wird die zuletzt gespeicherte öffnende Klammer entfernt.
 
-Beispiel:
-
-Vorher:
-
-```text
-Stack:
-
-oben
- ↓
-[(]
-[(]
-```
-
-Eine `)` wird gelesen.
-
-Danach:
-
-```text
-Stack:
-
-oben
- ↓
-[(]
-```
-
-Eine offene Klammer wurde erfolgreich geschlossen.
+Bei nur einer Klammerart reicht das aus: Jede gespeicherte Klammer ist automatisch eine `(`.
 
 ---
 
-## 7. Warum reicht am Ende `stack.is_empty()`?
+### 6. Am Ende auf verbleibende Öffner prüfen
 
-Nach dem Durchlaufen des gesamten Strings gibt es zwei Möglichkeiten.
-
-### Stack ist leer
-
-```text
-[]
-```
-
-Dann wurde jede öffnende Klammer wieder geschlossen.
-
-Die Klammern sind ausgeglichen:
-
-```python
-return True
-```
-
-### Stack enthält noch Elemente
-
-Zum Beispiel bei:
-
-```text
-(()
-```
-
-bleibt eine öffnende Klammer übrig:
-
-```text
-Stack:
-
-[(]
-```
-
-Dann fehlt eine schließende Klammer.
-
-Deshalb:
-
-```python
-return False
-```
-
-Genau beides können wir kompakt ausdrücken mit:
+Nach dem vollständigen Durchlauf:
 
 ```python
 return stack.is_empty()
 ```
 
-Ist der Stack leer, liefert die Methode `True`.
+Sind keine Elemente mehr vorhanden:
 
-Ist er nicht leer, liefert sie `False`.
+```text
+True
+```
+
+Dann wurde jede öffnende Klammer geschlossen.
+
+Bleibt mindestens eine `(` auf dem Stack:
+
+```text
+False
+```
+
+Dann fehlt mindestens eine schließende Klammer.
 
 ---
 
-## 8. Beispiel `((()))`
+## Warum diese Lösung funktioniert
 
-Wir verfolgen den Zustand des Stacks:
+Der Stack repräsentiert zu jedem Zeitpunkt genau die **noch nicht geschlossenen öffnenden Klammern**.
+
+Das ist die zentrale Invariante des Algorithmus.
+
+Während des Durchlaufs gilt:
+
+```text
+Stack-Inhalt
+=
+alle bisher geöffneten, aber noch nicht geschlossenen Klammern
+```
+
+Eine `(` erweitert diesen Zustand:
+
+```python
+stack.push("(")
+```
+
+Eine `)` reduziert ihn:
+
+```python
+stack.pop()
+```
+
+Eine schließende Klammer bei leerem Stack verletzt die Invariante sofort:
+
+```python
+if stack.is_empty():
+    return False
+```
+
+Und ein nicht leerer Stack am Ende zeigt, dass noch offene Zustände übrig sind.
+
+---
+
+## Beispiel: `((()))`
 
 ```text
 Zeichen    Aktion     Stack
@@ -370,7 +297,7 @@ Zeichen    Aktion     Stack
 )          pop        leer
 ```
 
-Am Ende:
+Am Ende gilt:
 
 ```text
 stack.is_empty() == True
@@ -384,7 +311,7 @@ True
 
 ---
 
-## 9. Beispiel `(()`
+## Beispiel: `(()`
 
 ```text
 Zeichen    Aktion     Stack
@@ -394,7 +321,7 @@ Zeichen    Aktion     Stack
 )          pop        (
 ```
 
-Am Ende befindet sich noch eine öffnende Klammer auf dem Stack.
+Am Ende bleibt eine öffnende Klammer übrig.
 
 Ergebnis:
 
@@ -404,180 +331,35 @@ False
 
 ---
 
-## 10. Beispiel `)(`
+## Beispiel: `)(`
 
-Dieses Beispiel zeigt, warum es nicht reicht, nur die Anzahl der Klammern zu vergleichen.
+Dieses Beispiel zeigt besonders deutlich, warum die Reihenfolge entscheidend ist.
 
-Die erste Klammer ist:
+Das erste Zeichen ist:
 
 ```text
 )
 ```
 
-Der Stack ist aber noch leer.
+Der Stack ist zu diesem Zeitpunkt leer.
 
-Es gibt also keine passende öffnende Klammer.
-
-Der Algorithmus beendet sich sofort mit:
-
-```python
-False
-```
-
-Ob später noch eine `(` kommt, spielt keine Rolle mehr.
-
-Die Reihenfolge war bereits ungültig.
-
----
-
-## 11. Laufzeitkomplexität
-
-Sei `n` die Anzahl der Zeichen im String.
-
-Der Algorithmus läuft einmal durch den String:
-
-```python
-for symbol in symbol_string:
-```
-
-Jedes Zeichen wird höchstens einmal betrachtet.
-
-Die Stack-Operationen
-
-```python
-push()
-pop()
-is_empty()
-```
-
-werden jeweils als konstante Operationen betrachtet:
-
-```text
-O(1)
-```
-
-Damit ergibt sich insgesamt:
-
-```text
-O(n)
-```
-
-Die Laufzeit wächst also linear mit der Länge der Eingabe.
-
----
-
-## 12. Speicherkomplexität
-
-Im ungünstigsten Fall besteht der gesamte String nur aus öffnenden Klammern:
-
-```text
-(((((((((
-```
-
-Dann werden alle `n` Zeichen auf dem Stack gespeichert.
-
-Der zusätzliche Speicherbedarf beträgt deshalb im Worst Case:
-
-```text
-O(n)
-```
-
----
-
-## 13. Fehlerfälle und Robustheit
-
-Die Funktion behandelt zwei wichtige logische Fehlerfälle bereits korrekt:
-
-### Zu viele schließende Klammern
-
-Beispiel:
-
-```text
-())
-```
-
-Sobald eine `)` erscheint, obwohl der Stack leer ist:
+Der Algorithmus kann deshalb sofort:
 
 ```python
 return False
 ```
 
-### Zu viele öffnende Klammern
+ausführen.
 
-Beispiel:
+Dass später noch eine `(` erscheint, kann den bereits entstandenen Strukturfehler nicht mehr reparieren.
 
-```text
-((()
-```
-
-Am Ende ist der Stack nicht leer:
-
-```python
-return stack.is_empty()
-```
-
-liefert:
-
-```text
-False
-```
+Das ist zugleich ein Beispiel für einen sinnvollen **Early Return**.
 
 ---
 
-## 14. Was passiert mit anderen Zeichen?
+## Warum bloßes Zählen nicht reicht
 
-Der aktuelle Code reagiert nur auf:
-
-```text
-(
-)
-```
-
-Andere Zeichen werden ignoriert.
-
-Zum Beispiel:
-
-```python
-par_checker("(a+b)")
-```
-
-würde ebenfalls:
-
-```text
-True
-```
-
-zurückgeben.
-
-Für die Aufgabenstellung ist das unproblematisch, wenn tatsächlich nur eine Klammerkette erwartet wird.
-
-In einer produktiveren Variante müsste man bewusst entscheiden:
-
-- Sollen andere Zeichen erlaubt sein?
-- Sollen sie ignoriert werden?
-- Oder soll bei unerwarteten Zeichen ein Fehler ausgelöst werden?
-
-Das ist ein gutes Beispiel dafür, dass **Eingabevalidierung eine Designentscheidung** ist.
-
----
-
-## 15. Kleine Korrektur im Testcode
-
-Beim letzten Test muss die f-String-Syntax korrekt geschlossen werden.
-
-Richtig ist:
-
-```python
-print(f")(: {par_checker(')(')}")
-```
-
-Damit wird der String `")("` an `par_checker()` übergeben.
-
----
-
-## 16. Warum nicht einfach die Anzahl vergleichen?
-
-Eine naive Idee wäre:
+Eine naheliegende Idee wäre:
 
 ```python
 symbol_string.count("(") == symbol_string.count(")")
@@ -599,76 +381,271 @@ Aber auch:
 
 enthält genau eine öffnende und eine schließende Klammer.
 
-Die Anzahl ist gleich, trotzdem ist die Reihenfolge ungültig.
+Die Mengen stimmen, die Struktur aber nicht.
 
-Deshalb brauchen wir eine Datenstruktur, die den **aktuellen Zustand während des Lesens** speichert.
-
-Der Stack ist dafür ideal.
+Der Stack speichert deshalb nicht nur **wie viele** Klammern offen sind, sondern hält den Zustand während des Lesens fest.
 
 ---
 
-## 17. Zentrale Lernidee
+## Komplexität
 
-Die Aufgabe zeigt sehr schön, wofür ein Stack praktisch eingesetzt werden kann.
+Sei `n` die Länge von `symbol_string`.
 
-Bei verschachtelten Strukturen gilt häufig:
+### Laufzeit
 
-> Das zuletzt geöffnete Element muss zuerst wieder geschlossen werden.
-
-Genau das entspricht:
-
-```text
-LIFO
-Last In, First Out
-```
-
-Dieses Prinzip begegnet später unter anderem bei:
-
-- Klammerprüfung
-- HTML- und XML-Strukturen
-- Parsern
-- mathematischen Ausdrücken
-- Funktionsaufrufen
-- Undo-Funktionen
-- Backtracking
-
----
-
-## Zusammenfassung
-
-Der Algorithmus liest die Klammerkette von links nach rechts.
-
-Bei einer öffnenden Klammer:
+Der String wird genau einmal durchlaufen:
 
 ```python
-stack.push("(")
+for symbol in symbol_string:
 ```
 
-Bei einer schließenden Klammer:
+Die relevanten Stack-Operationen:
 
-1. prüfen wir, ob überhaupt eine offene Klammer vorhanden ist,
-2. entfernen wir diese mit `pop()`.
+```text
+push()
+pop()
+is_empty()
+```
 
-Am Ende gilt:
+werden bei der verwendeten Stack-Implementierung als konstante Operationen betrachtet:
+
+```text
+O(1)
+```
+
+Damit ergibt sich insgesamt:
+
+```text
+O(n)
+```
+
+### Speicher
+
+Im Worst Case besteht die Eingabe ausschließlich aus öffnenden Klammern:
+
+```text
+(((((((((
+```
+
+Dann werden bis zu `n` Elemente auf dem Stack gespeichert.
+
+Der zusätzliche Speicherbedarf beträgt deshalb:
+
+```text
+O(n)
+```
+
+---
+
+## Rand- und Fehlerfälle
+
+### Leerer String
+
+```python
+par_checker("")
+```
+
+Es wird nichts auf den Stack gelegt.
+
+Am Ende ist der Stack leer:
+
+```text
+True
+```
+
+Ein leerer Ausdruck gilt damit als ausgeglichen.
+
+---
+
+### Zu viele schließende Klammern
+
+Beispiel:
+
+```text
+())
+```
+
+Sobald ein `)` erscheint, obwohl kein Öffner mehr vorhanden ist:
+
+```python
+if stack.is_empty():
+    return False
+```
+
+wird die Eingabe sofort abgelehnt.
+
+---
+
+### Zu viele öffnende Klammern
+
+Beispiel:
+
+```text
+((()
+```
+
+Der Durchlauf selbst verursacht keinen unmittelbaren Fehler.
+
+Am Ende bleibt jedoch mindestens eine `(` auf dem Stack:
 
 ```python
 return stack.is_empty()
 ```
 
-Nur wenn keine offene Klammer übrig geblieben ist, ist die Klammerkette ausgeglichen.
-
-Die Laufzeit beträgt:
+liefert:
 
 ```text
+False
+```
+
+---
+
+## Andere Zeichen und Eingabevalidierung
+
+Der aktuelle Algorithmus reagiert nur auf:
+
+```text
+(
+)
+```
+
+Andere Zeichen werden ignoriert.
+
+Zum Beispiel:
+
+```python
+par_checker("(a+b)")
+```
+
+prüft nur die enthaltenen Klammern und liefert:
+
+```text
+True
+```
+
+Ob dieses Verhalten gewünscht ist, hängt von der Schnittstelle ab.
+
+Mögliche Varianten wären:
+
+```text
+andere Zeichen ignorieren
+nur reine Klammerketten erlauben
+bei unerwarteten Zeichen einen Fehler auslösen
+```
+
+Für diese Übung ist das Ignorieren anderer Zeichen ausreichend. In einer größeren Anwendung wäre es eine bewusste **Input-Validation-Entscheidung**.
+
+---
+
+## Typvertrag
+
+Die aktuelle Signatur lautet:
+
+```python
+def par_checker(symbol_string: str) -> bool:
+```
+
+Damit wird dokumentiert:
+
+```text
+str -> bool
+```
+
+Type Hints machen die erwartete Schnittstelle sichtbar, erzwingen sie zur Laufzeit aber nicht automatisch.
+
+Eine zusätzliche Laufzeitvalidierung wäre für diese Lernübung nicht notwendig.
+
+---
+
+## Tests
+
+Zu den ursprünglichen Lernfällen gehören:
+
+```text
+((()))      -> True
+((()()))    -> True
+(()         -> False
+)(          -> False
+```
+
+Die Implementierung wird inzwischen zusätzlich automatisiert mit `pytest` geprüft:
+
+[`../tests/test_stacks.py`](../tests/test_stacks.py)
+
+Die Tests decken unter anderem ab:
+
+```text
+korrekt verschachtelte Klammern
+zu frühe schließende Klammer
+übrig bleibende öffnende Klammer
+```
+
+---
+
+## Design- und Skalierungsgedanke
+
+Der Algorithmus ist bereits gut auf das Problem zugeschnitten:
+
+```text
+ein Durchlauf
++
+konstante Stack-Operationen
+=
 O(n)
 ```
 
-und der zusätzliche Speicherbedarf im Worst Case:
+Es ist keine wiederholte Suche im bereits gelesenen Teil der Eingabe notwendig.
+
+Die Datenstruktur speichert nur den Zustand, der für die zukünftige Entscheidung noch relevant ist:
 
 ```text
-O(n)
+Welche öffnenden Klammern warten noch auf einen Schließer?
 ```
 
-Die wichtigste Erkenntnis lautet:
+Dieses Muster erscheint später auch in komplexeren Parsern und bei anderen verschachtelten Strukturen.
+
+---
+
+## Abgrenzung zur nächsten Übung
+
+Bei `par_checker()` existiert nur eine Symbolart:
+
+```text
+( )
+```
+
+Deshalb genügt beim Schließen:
+
+```python
+stack.pop()
+```
+
+Sobald mehrere Symboltypen unterstützt werden, reicht diese Information nicht mehr aus.
+
+Dann muss zusätzlich geprüft werden:
+
+> Passt der aktuelle Schließer zum zuletzt gespeicherten Öffner?
+
+Genau diese Erweiterung behandelt [`balanced_symbols_explanation.md`](balanced_symbols_explanation.md).
+
+---
+
+## Zentrale Lernidee
+
+Die zentrale Erkenntnis lautet:
 
 > **Ein Stack eignet sich für verschachtelte Strukturen, weil das zuletzt geöffnete Element zuerst wieder geschlossen werden muss.**
+
+Der Stack hält während des gesamten Durchlaufs den noch offenen Zustand fest.
+
+Dadurch können sowohl eine falsche Reihenfolge als auch übrig gebliebene Öffner in linearer Zeit erkannt werden.
+
+---
+
+## Weiterführend
+
+- [`README.md`](README.md) – Stack, LIFO und grundlegende Operationen
+- [`balanced_symbols_explanation.md`](balanced_symbols_explanation.md) – Erweiterung auf mehrere Symboltypen
+- [`../docs/data_structure_patterns.md`](../docs/data_structure_patterns.md) – Stack für verschachtelte Strukturen und Early Return
+- [`../docs/big_o_cheatsheet.md`](../docs/big_o_cheatsheet.md) – Analyse von Zeit- und Speicherkomplexität
+- [`../tests/test_stacks.py`](../tests/test_stacks.py) – automatisierte Tests
