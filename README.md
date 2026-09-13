@@ -108,8 +108,8 @@ More: [`docs/adt_and_implementation.md`](docs/adt_and_implementation.md)
 │   ├── max_queue_explanation.md
 │   ├── priority_queue.py
 │   ├── priority_queue_explanation.md
-│   ├── reversable_queue.py
-│   └── reversable_queue_explanation.md
+│   ├── reversible_queue.py
+│   └── reversible_queue_explanation.md
 ├── stacks
 │   ├── README.md
 │   ├── balanced_symbols.py
@@ -284,7 +284,7 @@ More: [`linked_lists/README.md`](linked_lists/README.md)
 | --- | --- |
 | [`priority_queue.py`](queues/priority_queue.py) | Combine priority with stable insertion order |
 | [`max_queue.py`](queues/max_queue.py) | Retrieve the maximum in `O(1)` using a monotonic helper queue |
-| [`reversable_queue.py`](queues/reversable_queue.py) | Combine queue and stack behavior |
+| [`reversible_queue.py`](queues/reversible_queue.py) | Combine queue and stack behavior |
 
 ### Linked Lists
 

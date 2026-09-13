@@ -2,7 +2,7 @@ import pytest
 
 from queues.max_queue import MaxQueue
 from queues.priority_queue import PriorityQueue
-from queues.reversable_queue import ReversableQueue
+from queues.reversible_queue import ReversibleQueue
 
 
 def test_priority_queue_respects_priority_and_fifo_order():
@@ -65,8 +65,8 @@ def test_max_queue_handles_empty_queue():
     assert queue.dequeue() is None
 
 
-def test_reversable_queue_reverses_first_k_elements():
-    queue = ReversableQueue()
+def test_reversible_queue_reverses_first_k_elements():
+    queue = ReversibleQueue()
 
     for value in [1, 2, 3, 4]:
         queue.enqueue(value)
@@ -78,8 +78,8 @@ def test_reversable_queue_reverses_first_k_elements():
     assert result == [3, 2, 1, 4]
 
 
-def test_reversable_queue_handles_zero_k():
-    queue = ReversableQueue()
+def test_reversible_queue_handles_zero_k():
+    queue = ReversibleQueue()
 
     queue.enqueue(1)
     queue.enqueue(2)
@@ -90,8 +90,8 @@ def test_reversable_queue_handles_zero_k():
     assert queue.dequeue() == 2
 
 
-def test_reversable_queue_rejects_invalid_k():
-    queue = ReversableQueue()
+def test_reversible_queue_rejects_invalid_k():
+    queue = ReversibleQueue()
 
     queue.enqueue(1)
     queue.enqueue(2)

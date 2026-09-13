@@ -44,7 +44,7 @@ while not stack.is_empty():
 ### Im Repository
 
 - `stacks/rev_string.py`
-- `queues/reversable_queue.py`
+- `queues/reversible_queue.py`
 
 ---
 

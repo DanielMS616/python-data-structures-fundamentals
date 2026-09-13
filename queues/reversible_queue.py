@@ -1,7 +1,7 @@
 from pythonds3.basic import Stack
 
 
-class ReversableQueue:
+class ReversibleQueue:
     def __init__(self) -> None:
         self.queue: list[object] = []
 
@@ -31,7 +31,7 @@ class ReversableQueue:
 
 
 if __name__ == "__main__":
-    rq = ReversableQueue()
+    rq = ReversibleQueue()
 
     rq.enqueue(1)
     rq.enqueue(2)

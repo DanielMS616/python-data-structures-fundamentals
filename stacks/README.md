@@ -194,7 +194,7 @@ d c b a
 Genau dieses Muster verwendet:
 
 - [`rev_string.py`](rev_string.py)
-- [`../queues/reversable_queue.py`](../queues/reversable_queue.py)
+- [`../queues/reversible_queue.py`](../queues/reversible_queue.py)
 
 ---
 

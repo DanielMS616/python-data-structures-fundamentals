@@ -1,4 +1,24 @@
-# `ReversableQueue.reverse_first_k()` – Die ersten k Elemente einer Queue umkehren
+# `ReversibleQueue.reverse_first_k()` – Die ersten k Elemente einer Queue umkehren
+
+## Hinweis zum ursprünglichen Übungsnamen
+
+Der Startercode der ursprünglichen Übung verwendete die Schreibweise:
+
+```python
+ReversableQueue
+```
+
+Die übliche englische Schreibweise lautet jedoch:
+
+```python
+ReversibleQueue
+```
+
+Für die öffentliche Referenzversion des Repositories wurde der Name deshalb auf `ReversibleQueue` korrigiert.
+
+Der ursprüngliche Lernstand bleibt weiterhin über die Git-Historie nachvollziehbar.
+
+---
 
 ## Ziel der Übung
 
@@ -63,7 +83,7 @@ Der entscheidende Teil der aktuellen Lösung ist:
 from pythonds3.basic import Stack
 
 
-class ReversableQueue:
+class ReversibleQueue:
     def __init__(self) -> None:
         self.queue: list[object] = []
 
@@ -89,7 +109,7 @@ class ReversableQueue:
             self.queue[index] = stack.pop()
 ```
 
-Die vollständige und aktuelle Implementierung befindet sich in [`reversable_queue.py`](reversable_queue.py).
+Die vollständige und aktuelle Implementierung befindet sich in [`reversible_queue.py`](reversible_queue.py).
 
 ---
 
@@ -622,12 +642,12 @@ Die Wahl der Operationen ist deshalb genauso wichtig wie die grobe algorithmisch
 
 ---
 
-## Warum die Klasse `ReversableQueue` heißt
+## Warum die Klasse `ReversibleQueue` heißt
 
 Der vorgegebene Klassenname lautet:
 
 ```python
-ReversableQueue
+ReversibleQueue
 ```
 
 Die üblichere englische Schreibweise wäre:

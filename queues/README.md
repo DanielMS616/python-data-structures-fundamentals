@@ -74,7 +74,7 @@ dequeue -> O(1)
 
 ## Variante 2: Python-Liste, Front am Listenanfang
 
-Unsere `ReversableQueue` verwendet sinngemäß:
+Unsere `ReversibleQueue` verwendet sinngemäß:
 
 ```python
 def enqueue(self, item):
@@ -372,8 +372,8 @@ amortisierte Laufzeit
 
 ### Erste k Elemente umkehren
 
-- [`reversable_queue.py`](reversable_queue.py)
-- [`reversable_queue_explanation.md`](reversable_queue_explanation.md)
+- [`reversible_queue.py`](reversible_queue.py)
+- [`reversible_queue_explanation.md`](reversible_queue_explanation.md)
 
 Lernideen:
 
@@ -388,7 +388,7 @@ Hinweis:
 Der Startercode verwendet den Namen:
 
 ```text
-ReversableQueue
+ReversibleQueue
 ```
 
 Die übliche englische Schreibweise wäre:
