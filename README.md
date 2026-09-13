@@ -1,5 +1,7 @@
 # Python Data Structures Fundamentals
 
+[![CI](https://github.com/DanielMS616/python-data-structures-fundamentals/actions/workflows/ci.yml/badge.svg)](https://github.com/DanielMS616/python-data-structures-fundamentals/actions/workflows/ci.yml)
+
 A personal learning and reference repository covering fundamental data structures, algorithmic complexity, and reusable problem-solving patterns in Python.
 
 This repository documents my learning process around **stacks, queues, linked lists, Big-O complexity, and common algorithmic techniques**. Exercise descriptions have been paraphrased where appropriate; the implementations, explanations, examples, and additional documentation were created as part of my own learning process.
